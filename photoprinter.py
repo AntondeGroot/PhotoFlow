@@ -22,6 +22,32 @@ from pathlib import Path
 
 import json
 
+
+from wx.lib.mixins.listctrl import CheckListCtrlMixin, ListCtrlAutoWidthMixin
+
+#packages = [('abiword', '5.8M', 'base'), ('adie', '145k', 'base'),
+#    ('airsnort', '71k', 'base'), ('ara', '717k', 'base'), ('arc', '139k', 'base'),
+#    ('asc', '5.8M', 'base'), ('ascii', '74k', 'base'), ('ash', '74k', 'base')]
+
+class CheckListCtrl(wx.ListCtrl, CheckListCtrlMixin, ListCtrlAutoWidthMixin):
+
+    def __init__(self, parent):
+        wx.ListCtrl.__init__(self, parent, wx.ID_ANY, style=wx.LC_REPORT |
+                wx.SUNKEN_BORDER )
+        CheckListCtrlMixin.__init__(self)
+        ListCtrlAutoWidthMixin.__init__(self)
+        #self.setResizeColumn(1)
+
+from pathlib import Path
+
+def GetShortPath(dirpath):
+    path = Path(dirpath)    
+    a = os.path.basename(path.parent.parent)
+    b = os.path.basename(path.parent)
+    shortpath = os.path.join(a,b)
+    return shortpath
+
+
 class settings():
     
     def __init__(self):
@@ -56,6 +82,9 @@ class settings():
                                    }))
             file.close()
 
+rawtypes = ['3fr','ari','arw','bay','braw','crw','cr2','cr3','cap','data','dcs','dcr','dng','drf','eip','erf','fff','gpr',
+            'iiq','k25','kdc','mdc','mef','mos','mrw','nef','nrw','obm','orf','pef', 'ptx','pxn','r3d', 'raf', 'raw', 'rwl', 
+            'rw2', 'rwz','sr2', 'srf', 'srw','tif','x3f']
 
 ext = ['jpg','png','nef']
 import subprocess
@@ -69,7 +98,9 @@ def CheckIfPrint(picname):
         return False
 
 
-    
+
+
+
 
 class MainFrame(wx.Frame,settings):
     
@@ -90,6 +121,33 @@ class MainFrame(wx.Frame,settings):
         self.settings_get()
         
         
+        #
+        #self.m_listCtrl = CheckListCtrl(self.m_panel)
+        self.m_listCtrl.InsertColumn(0, '#',width=60)
+        self.m_listCtrl.InsertColumn(1, 'Name')
+        self.m_listCtrl.InsertColumn(2, 'Type')
+        self.m_listCtrl.InsertColumn(3, 'Directory')
+        #self.m_listCtrl.InsertColumn(4, 'Size')
+        
+        
+        a = dir(self.m_choice)
+        for x in a:
+            if 'set' in x:
+                print(x)
+                
+        self.imagetypes = ['All','JPG & PNG','JPG','PNG','RAW']
+        
+        self.m_choice.SetItems(['Unedited','Edited','Print'])
+        self.m_choice.SetSelection(0)
+        self.m_choice2.SetItems(self.imagetypes)
+        self.m_choice2.SetSelection(4)
+        
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self.m_listCtrl, 1, wx.EXPAND)
+        self.SetSizer(sizer)
+        
+        
+        self.Update()
         self.settextctrl()    
         
         
@@ -100,22 +158,41 @@ class MainFrame(wx.Frame,settings):
         for item in dirs:
             if not item.exists():
                 item.mkdir()
+    def imagetypelist(self):
+        i = self.m_choice2.GetSelection()
+        if i == 0:
+            a = ['jpg','png','nef']
+        elif i == 1:
+            a = ['jpg','png']
+        elif i == 2:
+            a = ['jpg']
+        elif i == 3:
+            a = ['png']
+        elif i == 4:
+            a = ['nef']
+        return a
+            
+    def MyFrame1OnSize(self,event):
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(self.m_listCtrl, 1, wx.EXPAND)
+        self.SetSizer(sizer)
+        self.Update()
         
         
-        self.m_grid.SetColLabelValue(0, "View Pic")
-        self.m_grid.SetColLabelValue(1, "View Folder")
-        self.m_grid.SetColLabelValue(2, "Delete")
-        self.m_grid.SetColLabelValue(3, "Lightroom")
-        
-        
+    def m_choiceOnChoice(self,event):
+        pass
+    def m_choice2OnChoice(self,event):
+        pass
+    
     def m_buttonOnButtonClick(self,parent):
         
-        directory = r'C:\Users\aammd\Desktop'
+        
         
         piclist = []
         self.dirlist = []
         self.pathlist = []
-        for root, dirs, files in os.walk(directory, topdown=True):
+        self.extensionlist = []
+        for root, dirs, files in os.walk(self.root_directory, topdown=True):
             for name in files:       
                 #print(f"name = {name}")
                 #variables
@@ -128,22 +205,32 @@ class MainFrame(wx.Frame,settings):
                     print(f"name = {name}")
                     print(f"mtime = {mtime}")
                     piclist.append(name)
+                    self.extensionlist.append(file_extension)
                     self.pathlist.append(path)
                     print(Path(path).parents[1])
-                    
-                    #self.dirlist.append()
-                    if CheckIfPrint(path):
-                        pass
-        rownr = self.m_grid.GetNumberRows()
-        nr = len(piclist) - rownr
-        self.m_grid.AppendRows(numRows=nr, updateLabels=True)
-        for i,item in enumerate(piclist):
-            
-            self.m_grid.SetCellValue(i, 0,f"{item}")
-            self.m_grid.SetCellBackgroundColour(i, 2, 'red')
-        self.m_grid.AutoSizeColumn(0, setAsMin = True)
+                    self.dirlist.append(GetShortPath(path))
+
         
+        for i,item in enumerate(piclist):
+            index = self.m_listCtrl.InsertItem(i, f"{i}")
+            self.m_listCtrl.SetItem(index, 1, item)
+            self.m_listCtrl.SetItem(index, 2, self.extensionlist[i])
+            self.m_listCtrl.SetItem(index, 3, self.dirlist[i])
+            
+            
+        
+        
+        for i in range(4):
+            self.m_listCtrl.SetColumnWidth(i, wx.LIST_AUTOSIZE)
+            
+            print(self.m_listCtrl.GetColumn(i).GetText())
+        
+        self.Layout()
         self.Update()
+    def m_listCtrlOnListColClick(self,click):
+        pass
+    def m_listCtrlOnListItemSelected(self,click):
+        pass
     def m_gridOnGridCellLeftClick(self,click):
         #subprocess.Popen([r"C:\Program Files\Adobe\Adobe Lightroom\lightroom.exe", r'C:\Users\aammd\Desktop\coffee_idea.jpg'], stdin=None,
         #                 stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -178,7 +265,15 @@ class MainFrame(wx.Frame,settings):
                 self.settings_set()
                 self.settextctrl()
                 self.Update()
-                
+    
+    def btnViewOnButtonClick( self, event ):
+        pass
+	
+    def btnEditOnButtonClick( self, event ):
+        pass
+	
+    def btnDeleteOnButtonClick( self, event ):
+        pass
                 
                 
     
