@@ -122,12 +122,12 @@ class MainFrame(wx.Frame,settings):
         
         
         #
-        #self.m_listCtrl = CheckListCtrl(self.m_panel)
+        self.m_listCtrl = CheckListCtrl(self.m_panel)
         self.m_listCtrl.InsertColumn(0, '#',width=60)
         self.m_listCtrl.InsertColumn(1, 'Name')
         self.m_listCtrl.InsertColumn(2, 'Type')
         self.m_listCtrl.InsertColumn(3, 'Directory')
-        #self.m_listCtrl.InsertColumn(4, 'Size')
+        
         
         
         a = dir(self.m_choice)
@@ -158,6 +158,8 @@ class MainFrame(wx.Frame,settings):
         for item in dirs:
             if not item.exists():
                 item.mkdir()
+                
+
     def imagetypelist(self):
         i = self.m_choice2.GetSelection()
         if i == 0:
@@ -251,7 +253,7 @@ class MainFrame(wx.Frame,settings):
         if col == 3:
             
             filename = self.pathlist[row]
-            subprocess.Popen([r"C:\Program Files\Adobe\Adobe Lightroom\lightroom.exe", filename], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.run([r"C:\Program Files\Adobe\Adobe Lightroom\lightroom.exe", filename], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             
     def m_buttonDirpickerOnButtonClick(self,event):
         
@@ -267,12 +269,30 @@ class MainFrame(wx.Frame,settings):
                 self.Update()
     
     def btnViewOnButtonClick( self, event ):
-        pass
-	
+        selected = []
+        for index in range(self.m_listCtrl.GetItemCount()):
+            if self.m_listCtrl.IsChecked(index):
+                selected.append(index)
+                
+        for index in selected:
+            filename = self.pathlist[index]
+            subprocess.run(f"explorer {filename}")
+            
     def btnEditOnButtonClick( self, event ):
+        selected = []
+        for index in range(self.m_listCtrl.GetItemCount()):
+            if self.m_listCtrl.IsChecked(index):
+                selected.append(index)
+        
+        for index in selected:
+            filename = self.pathlist[index]
+            subprocess.Popen([r"C:\Program Files\Adobe\Adobe Lightroom\lightroom.exe", filename], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        
         pass
 	
     def btnDeleteOnButtonClick( self, event ):
+        pass
+    def m_btnFolderOnButtonClick(self,event):
         pass
                 
                 

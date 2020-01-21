@@ -63,6 +63,14 @@ class MyFrame1 ( wx.Frame ):
 		
 		bSizer1.Add( bSizer13, 0, wx.EXPAND, 5 )
 		
+		bSizer14 = wx.BoxSizer( wx.VERTICAL )
+		
+		self.m_btnFolder = wx.Button( self, wx.ID_ANY, u"Open Folder", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer14.Add( self.m_btnFolder, 0, wx.ALL, 5 )
+		
+		
+		bSizer1.Add( bSizer14, 0, wx.EXPAND, 5 )
+		
 		self.m_panel3 = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
 		bSizer10 = wx.BoxSizer( wx.HORIZONTAL )
 		
@@ -90,17 +98,6 @@ class MyFrame1 ( wx.Frame ):
 		bSizer8 = wx.BoxSizer( wx.HORIZONTAL )
 		
 		self.m_panel = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
-		self.m_panel.SetBackgroundColour( wx.Colour( 138, 217, 91 ) )
-		
-		bSizer9 = wx.BoxSizer( wx.VERTICAL )
-		
-		self.m_listCtrl = wx.ListCtrl( self.m_panel, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LC_REPORT|wx.FULL_REPAINT_ON_RESIZE|wx.SUNKEN_BORDER )
-		bSizer9.Add( self.m_listCtrl, 1, wx.ALL, 5 )
-		
-		
-		self.m_panel.SetSizer( bSizer9 )
-		self.m_panel.Layout()
-		bSizer9.Fit( self.m_panel )
 		bSizer8.Add( self.m_panel, 1, wx.EXPAND |wx.ALL, 5 )
 		
 		
@@ -118,11 +115,10 @@ class MyFrame1 ( wx.Frame ):
 		self.m_buttonDirpicker.Bind( wx.EVT_BUTTON, self.m_buttonDirpickerOnButtonClick )
 		self.m_choice.Bind( wx.EVT_CHOICE, self.m_choiceOnChoice )
 		self.m_choice2.Bind( wx.EVT_CHOICE, self.m_choice2OnChoice )
+		self.m_btnFolder.Bind( wx.EVT_BUTTON, self.m_btnFolderOnButtonClick )
 		self.btnView.Bind( wx.EVT_BUTTON, self.btnViewOnButtonClick )
 		self.btnEdit.Bind( wx.EVT_BUTTON, self.btnEditOnButtonClick )
 		self.btnDelete.Bind( wx.EVT_BUTTON, self.btnDeleteOnButtonClick )
-		self.m_listCtrl.Bind( wx.EVT_LIST_COL_CLICK, self.m_listCtrlOnListColClick )
-		self.m_listCtrl.Bind( wx.EVT_LIST_ITEM_SELECTED, self.m_listCtrlOnListItemSelected )
 	
 	def __del__( self ):
 		pass
@@ -144,6 +140,9 @@ class MyFrame1 ( wx.Frame ):
 	def m_choice2OnChoice( self, event ):
 		event.Skip()
 	
+	def m_btnFolderOnButtonClick( self, event ):
+		event.Skip()
+	
 	def btnViewOnButtonClick( self, event ):
 		event.Skip()
 	
@@ -151,12 +150,6 @@ class MyFrame1 ( wx.Frame ):
 		event.Skip()
 	
 	def btnDeleteOnButtonClick( self, event ):
-		event.Skip()
-	
-	def m_listCtrlOnListColClick( self, event ):
-		event.Skip()
-	
-	def m_listCtrlOnListItemSelected( self, event ):
 		event.Skip()
 	
 
