@@ -58,22 +58,20 @@ class pictures():
         
     
     def checktype(self,filename = '',mode = 'Unedited'):
-        
+        mode = mode.lower()
             
-        if mode == 'Unedited':
-            print("unedited")
+        if mode == 'unedited':
             if self.edited not in filename and self.queue not in filename and self.printed not in filename:
                 return True
             else:
                 return False
-        elif mode == 'Edited':
+        elif mode == 'edited':
             
             if self.edited in filename and self.print not in filename:
-                print(filename)
                 return True
             else:
                 return False
-        elif mode == 'Print':
+        elif mode == 'print':
             if self.queue in filename and self.printed not in filename:
                 return True
             else:
@@ -84,21 +82,27 @@ class pictures():
         
     def getmodes(self):
         return self.picturemodes
-    def addpicmode(self,mode='Edit'):
+    
+    def AddToPath(self,path,string):
+        filename, file_extension = os.path.splitext(path)
+        filename += string
+        filename += file_extension 
+        return filename
+    
+    def addpicmode(self,path = '',mode='Edit'):
         mode = mode.lower()
-        
+        path_out = None
         if mode == 'edit':
-            pass
-            self.edited
+            path_out = self.AddToPath(path,self.edited)
         elif mode == 'queue':
-            pass
-            self.queue
+            path_out = self.AddToPath(path,self.queue)
         elif mode == 'printed':
-            pass
-            self.printed
+            path = path.replace(self.queue,"")
+            path_out = self.AddToPath(path,self.printed)
         else:
              raise ValueError("input to method addpicmode was incorrect")
         
+        return path_out
     
 
 
@@ -287,9 +291,7 @@ class MainFrame(wx.Frame,settings):
         
         if IsRAW(filepath):
             image = RAW_to_PIL(filepath)
-            print("is raw")
         else:
-            print("is jpg")
             image = JPG_to_PIL(filepath)
         #use convert RGB to deal with 32 bit images, they will otherwise display weird images as if it is scattered over multiple lines
         image = image.convert('RGB')
@@ -316,7 +318,10 @@ class MainFrame(wx.Frame,settings):
     def m_buttonOnButtonClick(self,parent):
         
         #reset
-        self.m_grid.ClearGrid() 
+        
+        NrRows = self.m_grid.GetNumberRows()
+        if NrRows:
+            self.m_grid.DeleteRows(pos=0, numRows=NrRows, updateLabels=True)
         
         
         self.piclist = []
@@ -331,9 +336,9 @@ class MainFrame(wx.Frame,settings):
                 filename, file_extension = os.path.splitext(path)
                 if file_extension.lower() in listofextensions:
                     modes = self.pictures.getmodes()
-                    print(self.choiceindex)
+                    
                     if self.pictures.checktype(filename=filename,mode=modes[self.choiceindex]):
-                        print(f"name = {name}")
+                        #print(f"name = {name}")
                     
                         
                         self.piclist.append(name)
@@ -343,7 +348,7 @@ class MainFrame(wx.Frame,settings):
                         #self.mtimelist.append(mtime)
         
         if self.piclist:
-            self.m_grid.AppendRows(len(self.piclist)-1)
+            self.m_grid.AppendRows(len(self.piclist))
             for i,item in enumerate(self.piclist):
                 self.m_grid.SetCellValue(i,0,self.piclist[i])
                 self.m_grid.SetCellValue(i,1,self.extensionlist[i])
@@ -384,14 +389,24 @@ class MainFrame(wx.Frame,settings):
     def btnDeleteOnButtonClick( self, event ):
         print(f"selected = {self.selectedrow}")
         if isinstance(self.selectedrow,int):
+            self.m_grid.DeleteRows(pos=self.selectedrow, numRows=1, updateLabels=True)
             
             path = self.pathlist[self.selectedrow]
             print(f"path to remove is {path}")
             os.remove(path)
+            #update lists
+            index = self.selectedrow
+            self.piclist.pop(index)
+            self.extensionlist.pop(index)
+            self.pathlist.pop(index)
+            self.dirlist.pop(index)
+            # reset
             self.selectedrow = None
+            
     
         
     def btnDeleteBothOnButtonClick( self, event ):
+        
         filelist = []
         filelist_check = []
         
@@ -417,6 +432,8 @@ class MainFrame(wx.Frame,settings):
             
             for path in filelist:
                 os.remove(path)
+            #lazy way of resetting the grid and lists
+            self.m_buttonOnButtonClick(None)
 
         
         
