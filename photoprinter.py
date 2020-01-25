@@ -14,6 +14,14 @@ from pathlib import Path
 import rawpy #install rawpy not by using CMD's "pip install rawpy" but go to 'anaconda propt' then use "pip install rawpy"
 import exifread #via 'Anaconda prompt'
 from pathlib import Path
+import ctypes
+MessageBox = ctypes.windll.user32.MessageBoxW
+MB_ICONINFORMATION = 0x00000040
+
+"""PIL images need to be converted using im=im.convert('RGB')
+Otherwise it cannot deal with 32 bit images.
+Now both 8-32 bit images work fine."""
+
 
 def RAW_to_PIL(filename):
     raw = rawpy.imread(filename)
@@ -30,14 +38,68 @@ def mark_as_printqueue():
     pass
 def mark_as_printed():
     pass
-    
+
+#from StringIO import StringIO
+
+
 
 try:
     del app
 except:
     pass
 
-
+class pictures():
+    
+    def __init__(self):
+        self.picturemodes = ['Unedited','Edited','Print']
+        self.edited = "_EE"
+        self.queue = "_QQ"
+        self.printed = "_PP"
+        
+    
+    def checktype(self,filename = '',mode = 'Unedited'):
+        
+            
+        if mode == 'Unedited':
+            print("unedited")
+            if self.edited not in filename and self.queue not in filename and self.printed not in filename:
+                return True
+            else:
+                return False
+        elif mode == 'Edited':
+            
+            if self.edited in filename and self.print not in filename:
+                print(filename)
+                return True
+            else:
+                return False
+        elif mode == 'Print':
+            if self.queue in filename and self.printed not in filename:
+                return True
+            else:
+                return False
+        else:
+             raise ValueError("input to method checktype was incorrect")
+            
+        
+    def getmodes(self):
+        return self.picturemodes
+    def addpicmode(self,mode='Edit'):
+        mode = mode.lower()
+        
+        if mode == 'edit':
+            pass
+            self.edited
+        elif mode == 'queue':
+            pass
+            self.queue
+        elif mode == 'printed':
+            pass
+            self.printed
+        else:
+             raise ValueError("input to method addpicmode was incorrect")
+        
+    
 
 
 
@@ -64,6 +126,9 @@ def get_date_taken(path):
         
     return dateTaken
 
+
+
+    
 
 class settings():
     
@@ -135,6 +200,8 @@ def path_to_basename(filepath):
     basename,_ = os.path.splitext(filename)
     return basename
 
+
+
 class MainFrame(wx.Frame,settings):
     
     def settextctrl(self):
@@ -148,6 +215,9 @@ class MainFrame(wx.Frame,settings):
         gui.MyFrame.__init__(self,parent)
         datadir = os.getenv("LOCALAPPDATA")
         app = Path(datadir,"PicPrinter")
+        self.pictures = pictures()
+        print(f"type is {self.pictures.checktype(filename = '_QQ',mode='Edited')}")
+        
         if not app.exists():
             app.mkdir()
         self.dirsettings = Path(app,"settings")
@@ -171,12 +241,15 @@ class MainFrame(wx.Frame,settings):
             if 'set' in x:
                 print(x)
                 
-        self.imagetypes = ['All','JPG & PNG','JPG','PNG','RAW']
+        self.imagetypes = ['All','JPG & PNG','RAW']
         
-        self.m_choice.SetItems(['Unedited','Edited','Print'])
-        self.m_choice.SetSelection(0)
+        
+        self.choiceindex = 0
+        self.choice2index = 0
+        self.m_choice.SetItems(self.pictures.getmodes())
+        self.m_choice.SetSelection(self.choiceindex)
         self.m_choice2.SetItems(self.imagetypes)
-        self.m_choice2.SetSelection(0)        
+        self.m_choice2.SetSelection(self.choice2index)        
         
         self.Update()
         self.settextctrl()    
@@ -191,7 +264,10 @@ class MainFrame(wx.Frame,settings):
         """ 
         
     def m_choiceOnChoice(self,event):
+        self.choiceindex = self.m_choice.GetSelection()
+        print(f"choice is now = {self.choiceindex}")
         pass
+    
     def m_choice2OnChoice(self,event):
         pass
     def btnPrintQueueOnButtonClick(self,event):
@@ -215,6 +291,8 @@ class MainFrame(wx.Frame,settings):
         else:
             print("is jpg")
             image = JPG_to_PIL(filepath)
+        #use convert RGB to deal with 32 bit images, they will otherwise display weird images as if it is scattered over multiple lines
+        image = image.convert('RGB')
         width, height = image.size
         
         PanelHeight = round(float(PanelWidth)*height/width)
@@ -223,10 +301,14 @@ class MainFrame(wx.Frame,settings):
             fraction = float(PH)/PanelHeight 
             PanelHeight = PH
             PanelWidth = round(fraction*PanelWidth)
-        image = image.resize((PanelWidth, PanelHeight), PIL.Image.ANTIALIAS)        
+        
+        image = image.resize((PanelWidth, PanelHeight), PIL.Image.ANTIALIAS)    
+        
         
         width, height = image.size
         image2 = wx.Image( width, height )
+        image.tobytes() 
+        
         image2.SetData( image.tobytes() )
         self.m_bitmap.SetBitmap(wx.Bitmap(image2))   
         
@@ -243,38 +325,36 @@ class MainFrame(wx.Frame,settings):
         self.extensionlist = []
         self.mtimelist = [] 
         for root, dirs, files in os.walk(self.root_directory, topdown=True):
-            for name in files:       
-                print(f"name = {name}")
+            for name in files:                   
                 #variables
                 path = os.path.join(root, name)
                 filename, file_extension = os.path.splitext(path)
-                print(f"bool = {file_extension in listofextensions}")
                 if file_extension.lower() in listofextensions:
-                    #relpath = os.path.relpath(path,basedir)
+                    modes = self.pictures.getmodes()
+                    print(self.choiceindex)
+                    if self.pictures.checktype(filename=filename,mode=modes[self.choiceindex]):
+                        print(f"name = {name}")
                     
-                    #mtime = get_date_taken(path)
-                    
-                    self.piclist.append(name)
-                    self.extensionlist.append(file_extension)
-                    self.pathlist.append(path)
-                    self.dirlist.append(GetShortPath(path))
-                    #self.mtimelist.append(mtime)
-        try:
-            0
-            #self.m_grid.DeleteRows(pos=0, numRows=len(self.pathlist)-1, updateLabels=True)
-        except:
-            pass
-        self.m_grid.AppendRows(len(self.piclist)-1)
-        for i,item in enumerate(self.piclist):
-            self.m_grid.SetCellValue(i,0,self.piclist[i])
-            self.m_grid.SetCellValue(i,1,self.extensionlist[i])
-            self.m_grid.SetCellValue(i,2,self.dirlist[i])
+                        
+                        self.piclist.append(name)
+                        self.extensionlist.append(file_extension)
+                        self.pathlist.append(path)
+                        self.dirlist.append(GetShortPath(path))
+                        #self.mtimelist.append(mtime)
         
-        
-        for i in range(3):
+        if self.piclist:
+            self.m_grid.AppendRows(len(self.piclist)-1)
+            for i,item in enumerate(self.piclist):
+                self.m_grid.SetCellValue(i,0,self.piclist[i])
+                self.m_grid.SetCellValue(i,1,self.extensionlist[i])
+                self.m_grid.SetCellValue(i,2,self.dirlist[i])
             
-            self.m_grid.AutoSizeColumn(i, setAsMin=True)
             
+            for i in range(3):
+                
+                self.m_grid.AutoSizeColumn(i, setAsMin=True)
+        else:
+            MessageBox(0, "No photos were found.", "Message", MB_ICONINFORMATION)
         self.m_grid.ForceRefresh()
         self.Layout()
         self.Update()
