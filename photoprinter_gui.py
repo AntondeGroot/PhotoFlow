@@ -80,19 +80,19 @@ class MyFrame ( wx.Frame ):
 		self.btnEdit = wx.Button( self.panel0, wx.ID_ANY, u"Edit Image", wx.DefaultPosition, wx.DefaultSize, 0 )
 		bSizer92.Add( self.btnEdit, 0, wx.ALL, 5 )
 		
+		self.btnPrintQueue = wx.Button( self.panel0, wx.ID_ANY, u"Add to Print Queue", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer92.Add( self.btnPrintQueue, 0, wx.ALL, 5 )
+		
 		self.btnDelete = wx.Button( self.panel0, wx.ID_ANY, u"Delete Image", wx.DefaultPosition, wx.DefaultSize, 0 )
 		bSizer92.Add( self.btnDelete, 0, wx.ALL, 5 )
 		
 		self.btnDeleteBoth = wx.Button( self.panel0, wx.ID_ANY, u"Delete RAW+JPG", wx.DefaultPosition, wx.DefaultSize, 0 )
 		bSizer92.Add( self.btnDeleteBoth, 0, wx.ALL, 5 )
 		
-		self.btnPrintQueue = wx.Button( self.panel0, wx.ID_ANY, u"Add to Print Queue", wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer92.Add( self.btnPrintQueue, 0, wx.ALL, 5 )
-		
 		
 		bSizer92.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 		
-		self.btnCollectPrints = wx.Button( self.panel0, wx.ID_ANY, u"Collect All Printed", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.btnCollectPrints = wx.Button( self.panel0, wx.ID_ANY, u"Export Print Queue", wx.DefaultPosition, wx.DefaultSize, 0 )
 		bSizer92.Add( self.btnCollectPrints, 0, wx.ALL, 5 )
 		
 		
@@ -191,9 +191,11 @@ class MyFrame ( wx.Frame ):
 		
 		# Connect Events
 		self.m_button.Bind( wx.EVT_BUTTON, self.m_buttonOnButtonClick )
+		self.m_choice.Bind( wx.EVT_CHOICE, self.m_choiceOnChoice )
+		self.m_choice2.Bind( wx.EVT_CHOICE, self.m_choice2OnChoice )
+		self.btnPrintQueue.Bind( wx.EVT_BUTTON, self.btnPrintQueueOnButtonClick )
 		self.btnDelete.Bind( wx.EVT_BUTTON, self.btnDeleteOnButtonClick )
 		self.btnDeleteBoth.Bind( wx.EVT_BUTTON, self.btnDeleteBothOnButtonClick )
-		self.btnPrintQueue.Bind( wx.EVT_BUTTON, self.btnPrintQueueOnButtonClick )
 		self.btnCollectPrints.Bind( wx.EVT_BUTTON, self.btnCollectPrintsOnButtonClick )
 		self.m_grid.Bind( wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.m_gridOnGridCellLeftClick )
 	
@@ -205,13 +207,19 @@ class MyFrame ( wx.Frame ):
 	def m_buttonOnButtonClick( self, event ):
 		event.Skip()
 	
+	def m_choiceOnChoice( self, event ):
+		event.Skip()
+	
+	def m_choice2OnChoice( self, event ):
+		event.Skip()
+	
+	def btnPrintQueueOnButtonClick( self, event ):
+		event.Skip()
+	
 	def btnDeleteOnButtonClick( self, event ):
 		event.Skip()
 	
 	def btnDeleteBothOnButtonClick( self, event ):
-		event.Skip()
-	
-	def btnPrintQueueOnButtonClick( self, event ):
 		event.Skip()
 	
 	def btnCollectPrintsOnButtonClick( self, event ):
