@@ -144,6 +144,7 @@ class settings():
             with open(Path(self.dirsettings,"settings.txt"), 'r') as file:
                 settings = json.load(file)
                 self.root_directory          = settings['root_directory']
+                self.edit_exe                = settings['edit_exe']
             file.close()
             
             
@@ -159,14 +160,16 @@ class settings():
         settingsfile = Path(self.dirsettings,"settings.txt")
         if not settingsfile.exists():   
             with settingsfile.open(mode='w') as file:
-                file.write(json.dumps({'root_directory'     : ''
+                file.write(json.dumps({'root_directory'     : '',
+                                       'edit_exe'           : r"C:\Program Files\Adobe\Adobe Lightroom\lightroom.exe"
                                        }))
                 file.close()
                 
     def settings_set(self):
         settingsfile = Path(self.dirsettings,"settings.txt")
         with settingsfile.open(mode='w') as file:
-            file.write(json.dumps({'root_directory' : self.root_directory
+            file.write(json.dumps({'root_directory' : self.root_directory,
+                                   'edit_exe' : self.edit_exe
                                    }))
             file.close()
 
@@ -260,12 +263,7 @@ class MainFrame(wx.Frame,settings):
             
     def MyFrame1OnSize(self,event):
         pass
-        """
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(self.m_listCtrl, 1, wx.EXPAND)
-        self.SetSizer(sizer)
-        self.Update()
-        """ 
+        
         
     def m_choiceOnChoice(self,event):
         self.choiceindex = self.m_choice.GetSelection()
@@ -377,14 +375,10 @@ class MainFrame(wx.Frame,settings):
                 self.Update()
                 
     def btnEditOnButtonClick( self, event ):
-        selected = []
-        for index in range(self.m_listCtrl.GetItemCount()):
-            if self.m_listCtrl.IsChecked(index):
-                selected.append(index)
-        
-        for index in selected:
+        index = self.selectedrow
+        if isinstance(index,int):        
             filename = self.pathlist[index]
-            subprocess.Popen([r"C:\Program Files\Adobe\Adobe Lightroom\lightroom.exe", filename], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.Popen([self.edit_exe, filename], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 	
     def btnDeleteOnButtonClick( self, event ):
         print(f"selected = {self.selectedrow}")
