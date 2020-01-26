@@ -54,8 +54,8 @@ class MyFrame ( wx.Frame ):
 		self.m_textDir = wx.TextCtrl( self.panel0, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 400,-1 ), 0 )
 		bSizer90.Add( self.m_textDir, 0, wx.ALL, 5 )
 		
-		self.m_button22 = wx.Button( self.panel0, wx.ID_ANY, u"Pick Dir", wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer90.Add( self.m_button22, 0, wx.ALL, 5 )
+		self.m_buttonDirpicker = wx.Button( self.panel0, wx.ID_ANY, u"Pick Dir", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer90.Add( self.m_buttonDirpicker, 0, wx.ALL, 5 )
 		
 		
 		bSizer84.Add( bSizer90, 0, wx.EXPAND, 5 )
@@ -191,8 +191,10 @@ class MyFrame ( wx.Frame ):
 		
 		# Connect Events
 		self.m_button.Bind( wx.EVT_BUTTON, self.m_buttonOnButtonClick )
+		self.m_buttonDirpicker.Bind( wx.EVT_BUTTON, self.m_buttonDirpickerOnButtonClick )
 		self.m_choice.Bind( wx.EVT_CHOICE, self.m_choiceOnChoice )
 		self.m_choice2.Bind( wx.EVT_CHOICE, self.m_choice2OnChoice )
+		self.btnEdit.Bind( wx.EVT_BUTTON, self.btnEditOnButtonClick )
 		self.btnPrintQueue.Bind( wx.EVT_BUTTON, self.btnPrintQueueOnButtonClick )
 		self.btnDelete.Bind( wx.EVT_BUTTON, self.btnDeleteOnButtonClick )
 		self.btnDeleteBoth.Bind( wx.EVT_BUTTON, self.btnDeleteBothOnButtonClick )
@@ -207,10 +209,16 @@ class MyFrame ( wx.Frame ):
 	def m_buttonOnButtonClick( self, event ):
 		event.Skip()
 	
+	def m_buttonDirpickerOnButtonClick( self, event ):
+		event.Skip()
+	
 	def m_choiceOnChoice( self, event ):
 		event.Skip()
 	
 	def m_choice2OnChoice( self, event ):
+		event.Skip()
+	
+	def btnEditOnButtonClick( self, event ):
 		event.Skip()
 	
 	def btnPrintQueueOnButtonClick( self, event ):
