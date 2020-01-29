@@ -52,27 +52,29 @@ class pictures():
     
     def __init__(self):
         self.picturemodes = ['Unedited','Edited','Print']
+        # modes
         self.edited = "_EE"
-        self.queue = "_QQ"
-        self.printed = "_PP"
+        self.queue = "_QQ" # queue to be printed
+        self.finished = "_PP"
+        self.finished = "_FF"
+        
         
     
     def checktype(self,filename = '',mode = 'Unedited'):
         mode = mode.lower()
             
         if mode == 'unedited':
-            if self.edited not in filename and self.queue not in filename and self.printed not in filename:
+            if self.edited not in filename and self.queue not in filename and self.finished not in filename:
                 return True
             else:
                 return False
         elif mode == 'edited':
-            
-            if self.edited in filename and self.print not in filename:
+            if self.edited in filename and self.finished not in filename:
                 return True
             else:
                 return False
         elif mode == 'print':
-            if self.queue in filename and self.printed not in filename:
+            if self.queue in filename and self.finished not in filename:
                 return True
             else:
                 return False
@@ -83,26 +85,36 @@ class pictures():
     def getmodes(self):
         return self.picturemodes
     
-    def AddToPath(self,path,string):
-        filename, file_extension = os.path.splitext(path)
+    def AddToPath(self,path_in,string):
+        filename, file_extension = os.path.splitext(path_in)
         filename += string
         filename += file_extension 
-        return filename
+        path_out = filename
+        os.rename(path_in,path_out)
+        return path_out
     
+        
     def addpicmode(self,path = '',mode='Edit'):
         mode = mode.lower()
-        path_out = None
+        
         if mode == 'edit':
-            path_out = self.AddToPath(path,self.edited)
+            path_new = self.AddToPath(path,self.edited)
+            return path_new
         elif mode == 'queue':
-            path_out = self.AddToPath(path,self.queue)
-        elif mode == 'printed':
-            path = path.replace(self.queue,"")
-            path_out = self.AddToPath(path,self.printed)
+            path_new = self.AddToPath(path,self.queue)
+            return path_new
+        elif mode == 'finished':
+            path_new = path.replace(self.queue,self.finished)
+            os.rename(path,path_new)
+            return path_new
+        elif mode == 'finished':
+            path_new = path.replace(self.queue,self.finished)
+            os.rename(path,path_new)
+            return path_new
         else:
              raise ValueError("input to method addpicmode was incorrect")
         
-        return path_out
+        
     
 
 
@@ -223,7 +235,7 @@ class MainFrame(wx.Frame,settings):
         datadir = os.getenv("LOCALAPPDATA")
         app = Path(datadir,"PicPrinter")
         self.pictures = pictures()
-        print(f"type is {self.pictures.checktype(filename = '_QQ',mode='Edited')}")
+        self.picturepath = None
         
         if not app.exists():
             app.mkdir()
@@ -272,10 +284,22 @@ class MainFrame(wx.Frame,settings):
     
     def m_choice2OnChoice(self,event):
         pass
+    """ BUTTONS """
+    def btnEditOnButtonClick( self, event ):
+        if self.picturepath:        
+            self.picturepath = self.pictures.addpicmode(path = self.picturepath,mode='Edit')
+            subprocess.Popen([self.edit_exe, self.picturepath], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            
+            
     def btnPrintQueueOnButtonClick(self,event):
-        pass
+        if self.picturepath:
+            self.picturepath = self.pictures.addpicmode(path = self.picturepath,mode='Queue')
+        
     def btnCollectPrintsOnButtonClick(self,event):
-        pass
+        if self.picturepath:    
+            self.picturepath = self.pictures.addpicmode(path = self.picturepath,mode='finished')
+    
+    """ EVENTS """
     
     def m_gridOnGridCellLeftClick(self,event):
         
@@ -285,6 +309,8 @@ class MainFrame(wx.Frame,settings):
         index = a
         self.selectedrow = index
         filepath = self.pathlist[index]
+        self.picturepath = filepath
+        
         PanelWidth, PH = self.m_panelBitmap.GetSize()
         
         if IsRAW(filepath):
@@ -374,18 +400,14 @@ class MainFrame(wx.Frame,settings):
                 self.settextctrl()
                 self.Update()
                 
-    def btnEditOnButtonClick( self, event ):
-        index = self.selectedrow
-        if isinstance(index,int):        
-            filename = self.pathlist[index]
-            subprocess.Popen([self.edit_exe, filename], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    
 	
     def btnDeleteOnButtonClick( self, event ):
         print(f"selected = {self.selectedrow}")
         if isinstance(self.selectedrow,int):
             self.m_grid.DeleteRows(pos=self.selectedrow, numRows=1, updateLabels=True)
             
-            path = self.pathlist[self.selectedrow]
+            path = self.picturepath
             print(f"path to remove is {path}")
             os.remove(path)
             #update lists
@@ -396,6 +418,7 @@ class MainFrame(wx.Frame,settings):
             self.dirlist.pop(index)
             # reset
             self.selectedrow = None
+            self.picturepath = None
             
     
         
@@ -404,11 +427,9 @@ class MainFrame(wx.Frame,settings):
         filelist = []
         filelist_check = []
         
-        print("going to delete both")
-        print(f"aa {self.selectedrow}")
         if isinstance(self.selectedrow,int):
             print("selected")
-            targetpath = self.pathlist[self.selectedrow]
+            targetpath = self.picturepath
             targetname,_ = os.path.splitext(os.path.basename(targetpath))
             date_check = get_date_taken(targetpath)
             
@@ -427,8 +448,10 @@ class MainFrame(wx.Frame,settings):
             for path in filelist:
                 os.remove(path)
             #lazy way of resetting the grid and lists
+            self.selectedrow = None
+            self.picturepath = None
             self.m_buttonOnButtonClick(None)
-
+            
         
         
                 
