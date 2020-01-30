@@ -9,6 +9,7 @@ import wx
 import os
 import photoprinter_gui as gui
 import subprocess
+import shutil
 import json
 from pathlib import Path
 import rawpy #install rawpy not by using CMD's "pip install rawpy" but go to 'anaconda propt' then use "pip install rawpy"
@@ -118,10 +119,6 @@ class pictures():
             path_new = path.replace(self.queue,self.finished)
             os.rename(path,path_new)
             return path_new
-        elif mode == 'finished':
-            path_new = path.replace(self.queue,self.finished)
-            os.rename(path,path_new)
-            return path_new
         else:
              raise ValueError("input to method addpicmode was incorrect")
         
@@ -168,6 +165,7 @@ class settings():
                 settings = json.load(file)
                 self.root_directory          = settings['root_directory']
                 self.edit_exe                = settings['edit_exe']
+                self.export_directory        = settings['export_directory']
             file.close()
             
             
@@ -184,7 +182,8 @@ class settings():
         if not settingsfile.exists():   
             with settingsfile.open(mode='w') as file:
                 file.write(json.dumps({'root_directory'     : '',
-                                       'edit_exe'           : r"C:\Program Files\Adobe\Adobe Lightroom\lightroom.exe"
+                                       'edit_exe'           : r"C:\Program Files\Adobe\Adobe Lightroom\lightroom.exe",
+                                       'export_directory'   : ''
                                        }))
                 file.close()
                 
@@ -192,7 +191,8 @@ class settings():
         settingsfile = Path(self.dirsettings,"settings.txt")
         with settingsfile.open(mode='w') as file:
             file.write(json.dumps({'root_directory' : self.root_directory,
-                                   'edit_exe' : self.edit_exe
+                                   'edit_exe' : self.edit_exe,
+                                   'export_directory' : self.export_directory
                                    }))
             file.close()
 
@@ -221,9 +221,10 @@ def IsRAW(filepath):
     file_extension = file_extension.replace('.','')
     return file_extension.lower() in rawtypes
 
-def IsJPG(filepath):
+def IsNotRAW(filepath):
     filename, file_extension = os.path.splitext(filepath)
-    return file_extension in nonrawtypes
+    file_extension = file_extension.replace('.','')
+    return file_extension.lower() in nonrawtypes
 
 def path_to_basename(filepath):
     filename = os.path.basename(filepath)
@@ -320,8 +321,44 @@ class MainFrame(wx.Frame,settings):
             self.picturepath = self.pictures.addpicmode(path = self.picturepath,mode='Queue')
         
     def btnCollectPrintsOnButtonClick(self,event):
-        if self.picturepath:    
-            self.picturepath = self.pictures.addpicmode(path = self.picturepath,mode='finished')
+        
+        # collect all printqueue files
+        self.printpathlist = []
+        for root, dirs, files in os.walk(self.root_directory, topdown=True):
+            for name in files:                   
+                #variables
+                path = os.path.join(root, name)
+                filename, file_extension = os.path.splitext(path)
+                if self.pictures.checktype(filename = filename ,mode = 'print queue'):
+                    newpath = self.pictures.addpicmode(path = path,mode='finished') #printqueue to finished
+                    # these will be copied to a folder
+                    if IsNotRAW(newpath):
+                        self.printpathlist.append(newpath)
+        
+        # open dir where to export it to 
+        with wx.DirDialog(self, "Choose which directory to select",style=wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST,defaultPath=self.export_directory) as DirDialog:
+            #fileDialog.SetPath(str(self.notesdir)+'\.')
+            if DirDialog.ShowModal() == wx.ID_CANCEL:
+                pass
+                return None    # the user changed their mind
+            else:
+                self.export_directory = DirDialog.GetPath()
+                self.settings_set()
+                self.settextctrl()
+                self.Update()
+                
+        if os.path.exists(self.export_directory):
+            if self.printpathlist:
+                for filepath in self.printpathlist:
+                    shutil.copy2(filepath,self.export_directory)
+                    #copy2 copies metadata, it only needs a directory as destination not the full path to a file
+            else:
+                MessageBox(0, "No photos were found.", "Message", MB_ICONINFORMATION)
+                
+            
+                
+        
+        
     
     """ EVENTS """
     
