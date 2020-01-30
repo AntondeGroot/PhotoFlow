@@ -51,7 +51,7 @@ except:
 class pictures():
     
     def __init__(self):
-        self.picturemodes = ['Unedited','Edited','Print']
+        self.picturemodes = ['Unedited','Edited','Print queue','Printed']
         # modes
         self.edited = "_EE"
         self.queue = "_QQ" # queue to be printed
@@ -73,8 +73,13 @@ class pictures():
                 return True
             else:
                 return False
-        elif mode == 'print':
+        elif mode == 'print queue':
             if self.queue in filename and self.finished not in filename:
+                return True
+            else:
+                return False
+        elif mode == 'printed':
+            if self.finished in filename:
                 return True
             else:
                 return False
@@ -98,10 +103,16 @@ class pictures():
         mode = mode.lower()
         
         if mode == 'edit':
-            path_new = self.AddToPath(path,self.edited)
+            if self.edited not in path:
+                path_new = self.AddToPath(path,self.edited)
+            else:
+                path_new = path#if you want to re-edit the file
             return path_new
         elif mode == 'queue':
-            path_new = self.AddToPath(path,self.queue)
+            if self.queue not in path:
+                path_new = self.AddToPath(path,self.queue)
+            else:
+                path_new = path
             return path_new
         elif mode == 'finished':
             path_new = path.replace(self.queue,self.finished)
@@ -224,16 +235,20 @@ def path_to_basename(filepath):
 class MainFrame(wx.Frame,settings):
     
     def settextctrl(self):
-        print(f"rootdirectory = {self.root_directory}")
         try:
             self.m_textDir.SetValue(self.root_directory)    
         except:
             self.m_textDir.SetValue('')
+        try:
+            self.m_textDirExe.SetValue(self.edit_exe)    
+        except:
+            self.m_textDirExe.SetValue('')    
+            
     """ INITIALIZE """
     def __init__(self,parent): 
         gui.MyFrame.__init__(self,parent)
         datadir = os.getenv("LOCALAPPDATA")
-        app = Path(datadir,"PicPrinter")
+        app = Path(datadir,"PhotoPrinter")
         self.pictures = pictures()
         self.picturepath = None
         
@@ -264,11 +279,11 @@ class MainFrame(wx.Frame,settings):
         
         
         self.choiceindex = 0
-        self.choice2index = 0
+        #self.choice2index = 0
         self.m_choice.SetItems(self.pictures.getmodes())
         self.m_choice.SetSelection(self.choiceindex)
-        self.m_choice2.SetItems(self.imagetypes)
-        self.m_choice2.SetSelection(self.choice2index)        
+        #self.m_choice2.SetItems(self.imagetypes)
+        #self.m_choice2.SetSelection(self.choice2index)        
         
         self.Update()
         self.settextctrl()    
@@ -279,16 +294,25 @@ class MainFrame(wx.Frame,settings):
         
     def m_choiceOnChoice(self,event):
         self.choiceindex = self.m_choice.GetSelection()
-        print(f"choice is now = {self.choiceindex}")
-        pass
+        self.m_buttonOnButtonClick(None)
     
     def m_choice2OnChoice(self,event):
         pass
     """ BUTTONS """
     def btnEditOnButtonClick( self, event ):
         if self.picturepath:        
+            #change filename
             self.picturepath = self.pictures.addpicmode(path = self.picturepath,mode='Edit')
             subprocess.Popen([self.edit_exe, self.picturepath], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    
+    def m_buttonImDirOnButtonClick( self, event ):
+        FILEBROWSER_PATH = os.path.join(os.getenv('WINDIR'), 'explorer.exe')
+        if self.picturepath:        
+            path = self.picturepath
+            if os.path.isdir(path):
+                subprocess.run([FILEBROWSER_PATH, path])
+            elif os.path.isfile(path):
+                subprocess.run([FILEBROWSER_PATH, '/select,', os.path.normpath(path)])
             
             
     def btnPrintQueueOnButtonClick(self,event):
@@ -303,40 +327,43 @@ class MainFrame(wx.Frame,settings):
     
     def m_gridOnGridCellLeftClick(self,event):
         
-        a = event.GetRow()
-        
-        self.m_grid.SelectRow( a, addToSelected=False)
-        index = a
-        self.selectedrow = index
-        filepath = self.pathlist[index]
-        self.picturepath = filepath
-        
-        PanelWidth, PH = self.m_panelBitmap.GetSize()
-        
-        if IsRAW(filepath):
-            image = RAW_to_PIL(filepath)
-        else:
-            image = JPG_to_PIL(filepath)
-        #use convert RGB to deal with 32 bit images, they will otherwise display weird images as if it is scattered over multiple lines
-        image = image.convert('RGB')
-        width, height = image.size
-        
-        PanelHeight = round(float(PanelWidth)*height/width)
-        
-        if PanelHeight > PH:
-            fraction = float(PH)/PanelHeight 
-            PanelHeight = PH
-            PanelWidth = round(fraction*PanelWidth)
-        
-        image = image.resize((PanelWidth, PanelHeight), PIL.Image.ANTIALIAS)    
-        
-        
-        width, height = image.size
-        image2 = wx.Image( width, height )
-        image.tobytes() 
-        
-        image2.SetData( image.tobytes() )
-        self.m_bitmap.SetBitmap(wx.Bitmap(image2))   
+        try:
+            a = event.GetRow()
+            
+            self.m_grid.SelectRow( a, addToSelected=False)
+            index = a
+            self.selectedrow = index
+            filepath = self.pathlist[index]
+            self.picturepath = filepath
+            
+            PanelWidth, PH = self.m_panelBitmap.GetSize()
+            
+            if IsRAW(filepath):
+                image = RAW_to_PIL(filepath)
+            else:
+                image = JPG_to_PIL(filepath)
+            #use convert RGB to deal with 32 bit images, they will otherwise display weird images as if it is scattered over multiple lines
+            image = image.convert('RGB')
+            width, height = image.size
+            
+            PanelHeight = round(float(PanelWidth)*height/width)
+            
+            if PanelHeight > PH:
+                fraction = float(PH)/PanelHeight 
+                PanelHeight = PH
+                PanelWidth = round(fraction*PanelWidth)
+            
+            image = image.resize((PanelWidth, PanelHeight), PIL.Image.ANTIALIAS)    
+            
+            
+            width, height = image.size
+            image2 = wx.Image( width, height )
+            image.tobytes() 
+            
+            image2.SetData( image.tobytes() )
+            self.m_bitmap.SetBitmap(wx.Bitmap(image2))   
+        except:#pressed on the grid when nothing was there
+            pass
         
 
     def m_buttonOnButtonClick(self,parent):
@@ -362,9 +389,7 @@ class MainFrame(wx.Frame,settings):
                     modes = self.pictures.getmodes()
                     
                     if self.pictures.checktype(filename=filename,mode=modes[self.choiceindex]):
-                        #print(f"name = {name}")
-                    
-                        
+
                         self.piclist.append(name)
                         self.extensionlist.append(file_extension)
                         self.pathlist.append(path)
@@ -382,6 +407,7 @@ class MainFrame(wx.Frame,settings):
             for i in range(3):
                 
                 self.m_grid.AutoSizeColumn(i, setAsMin=True)
+            print(f"piclist = {self.piclist}")
         else:
             MessageBox(0, "No photos were found.", "Message", MB_ICONINFORMATION)
         self.m_grid.ForceRefresh()
@@ -399,7 +425,20 @@ class MainFrame(wx.Frame,settings):
                 self.settings_set()
                 self.settextctrl()
                 self.Update()
-                
+    def m_buttonDirpickerExeOnButtonClick(self,event):
+        if not os.path.exists(self.edit_exe):
+            self.edit_exe = r"C:\\"
+            
+        with wx.FileDialog(self, "Select multiples files to combine", wildcard="*.exe",style=wx.FD_OPEN | wx.FD_FILE_MUST_EXIST|wx.FD_MULTIPLE) as fileDialog:
+            fileDialog.SetPath(str(self.edit_exe)+'\.')
+            if fileDialog.ShowModal() == wx.ID_CANCEL:
+                pass
+                return None    # the user changed their mind
+            else:
+                self.edit_exe = fileDialog.GetPath()
+                self.settings_set()
+                self.settextctrl()
+                self.Update()            
     
 	
     def btnDeleteOnButtonClick( self, event ):
