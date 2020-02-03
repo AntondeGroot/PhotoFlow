@@ -15,9 +15,14 @@ from pathlib import Path
 import rawpy #install rawpy not by using CMD's "pip install rawpy" but go to 'anaconda propt' then use "pip install rawpy"
 import exifread #via 'Anaconda prompt'
 from pathlib import Path
+import PIL
 import ctypes
+from send2trash import send2trash
+
 MessageBox = ctypes.windll.user32.MessageBoxW
 MB_ICONINFORMATION = 0x00000040
+PIL.Image.MAX_IMAGE_PIXELS = 1000000000  #max image size of 1GB: otherwise it will throw errors for 300MB panoramas
+                             
 
 """PIL images need to be converted using im=im.convert('RGB')
 Otherwise it cannot deal with 32 bit images.
@@ -305,6 +310,7 @@ class MainFrame(wx.Frame,settings):
             #change filename
             self.picturepath = self.pictures.addpicmode(path = self.picturepath,mode='Edit')
             subprocess.Popen([self.edit_exe, self.picturepath], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            self.resetimage()
     
     def m_buttonImDirOnButtonClick( self, event ):
         FILEBROWSER_PATH = os.path.join(os.getenv('WINDIR'), 'explorer.exe')
@@ -319,6 +325,12 @@ class MainFrame(wx.Frame,settings):
     def btnPrintQueueOnButtonClick(self,event):
         if self.picturepath:
             self.picturepath = self.pictures.addpicmode(path = self.picturepath,mode='Queue')
+            self.updategrid(index = self.selectedrow)
+            # reset
+            self.resetimage()
+            self.showimagefromindex(self.selectedrow)
+            
+            
         
     def btnCollectPrintsOnButtonClick(self,event):
         
@@ -354,51 +366,62 @@ class MainFrame(wx.Frame,settings):
                     #copy2 copies metadata, it only needs a directory as destination not the full path to a file
             else:
                 MessageBox(0, "No photos were found.", "Message", MB_ICONINFORMATION)
-                
+        self.resetimage()
             
                 
         
         
     
     """ EVENTS """
+    def selectlastrow(self):
+        try:
+            self.m_grid.SelectRow( self.selectedrow, addToSelected=False)
+        except:
+            if self.selectedrow:
+                self.selectedrow -= 1
+                self.m_grid.SelectRow( self.selectedrow, addToSelected=False)
+            
+    
+    def showimagefromindex(self,index):
+        self.m_grid.SelectRow( index, addToSelected=False)
+        
+        self.selectedrow = index
+        filepath = self.pathlist[index]
+        self.picturepath = filepath
+        
+        PanelWidth, PH = self.m_panelBitmap.GetSize()
+        
+        if IsRAW(filepath):
+            image = RAW_to_PIL(filepath)
+        else:
+            image = JPG_to_PIL(filepath)
+        #use convert RGB to deal with 32 bit images, they will otherwise display weird images as if it is scattered over multiple lines
+        image = image.convert('RGB')
+        width, height = image.size
+        
+        PanelHeight = round(float(PanelWidth)*height/width)
+        
+        if PanelHeight > PH:
+            fraction = float(PH)/PanelHeight 
+            PanelHeight = PH
+            PanelWidth = round(fraction*PanelWidth)
+        
+        image = image.resize((PanelWidth, PanelHeight), PIL.Image.ANTIALIAS)    
+        
+        
+        width, height = image.size
+        image2 = wx.Image( width, height )
+        image.tobytes() 
+        
+        image2.SetData( image.tobytes() )
+        self.m_bitmap.SetBitmap(wx.Bitmap(image2))  
     
     def m_gridOnGridCellLeftClick(self,event):
         
         try:
-            a = event.GetRow()
-            
-            self.m_grid.SelectRow( a, addToSelected=False)
-            index = a
-            self.selectedrow = index
-            filepath = self.pathlist[index]
-            self.picturepath = filepath
-            
-            PanelWidth, PH = self.m_panelBitmap.GetSize()
-            
-            if IsRAW(filepath):
-                image = RAW_to_PIL(filepath)
-            else:
-                image = JPG_to_PIL(filepath)
-            #use convert RGB to deal with 32 bit images, they will otherwise display weird images as if it is scattered over multiple lines
-            image = image.convert('RGB')
-            width, height = image.size
-            
-            PanelHeight = round(float(PanelWidth)*height/width)
-            
-            if PanelHeight > PH:
-                fraction = float(PH)/PanelHeight 
-                PanelHeight = PH
-                PanelWidth = round(fraction*PanelWidth)
-            
-            image = image.resize((PanelWidth, PanelHeight), PIL.Image.ANTIALIAS)    
-            
-            
-            width, height = image.size
-            image2 = wx.Image( width, height )
-            image.tobytes() 
-            
-            image2.SetData( image.tobytes() )
-            self.m_bitmap.SetBitmap(wx.Bitmap(image2))   
+            index = event.GetRow()
+            self.showimagefromindex(index)    
+             
         except:#pressed on the grid when nothing was there
             pass
         
@@ -412,39 +435,29 @@ class MainFrame(wx.Frame,settings):
             self.m_grid.DeleteRows(pos=0, numRows=NrRows, updateLabels=True)
         
         
-        self.piclist = []
-        self.dirlist = []
         self.pathlist = []
-        self.extensionlist = []
-        self.mtimelist = [] 
         for root, dirs, files in os.walk(self.root_directory, topdown=True):
             for name in files:                   
                 #variables
                 path = os.path.join(root, name)
                 filename, file_extension = os.path.splitext(path)
                 if file_extension.lower() in listofextensions:
-                    modes = self.pictures.getmodes()
-                    
+                    modes = self.pictures.getmodes()                    
                     if self.pictures.checktype(filename=filename,mode=modes[self.choiceindex]):
-
-                        self.piclist.append(name)
-                        self.extensionlist.append(file_extension)
                         self.pathlist.append(path)
-                        self.dirlist.append(GetShortPath(path))
-                        #self.mtimelist.append(mtime)
         
-        if self.piclist:
-            self.m_grid.AppendRows(len(self.piclist))
-            for i,item in enumerate(self.piclist):
-                self.m_grid.SetCellValue(i,0,self.piclist[i])
-                self.m_grid.SetCellValue(i,1,self.extensionlist[i])
-                self.m_grid.SetCellValue(i,2,self.dirlist[i])
+        if self.pathlist:
+            self.m_grid.AppendRows(len(self.pathlist))
+            for i,path in enumerate(self.pathlist):
+                filename, file_extension = os.path.splitext(path)
+                
+                self.m_grid.SetCellValue(i,0,os.path.basename(path))
+                self.m_grid.SetCellValue(i,1,file_extension)
+                self.m_grid.SetCellValue(i,2,GetShortPath(path))
             
             
             for i in range(3):
-                
                 self.m_grid.AutoSizeColumn(i, setAsMin=True)
-            print(f"piclist = {self.piclist}")
         else:
             MessageBox(0, "No photos were found.", "Message", MB_ICONINFORMATION)
         self.m_grid.ForceRefresh()
@@ -477,7 +490,10 @@ class MainFrame(wx.Frame,settings):
                 self.settextctrl()
                 self.Update()            
     
-	
+    def updategrid(self,index = None):
+        if isinstance(index,int):
+            self.pathlist.pop(index)
+        
     def btnDeleteOnButtonClick( self, event ):
         print(f"selected = {self.selectedrow}")
         if isinstance(self.selectedrow,int):
@@ -485,25 +501,30 @@ class MainFrame(wx.Frame,settings):
             
             path = self.picturepath
             print(f"path to remove is {path}")
-            os.remove(path)
+            #os.remove(path)
+            send2trash(path)
             #update lists
-            index = self.selectedrow
-            self.piclist.pop(index)
-            self.extensionlist.pop(index)
-            self.pathlist.pop(index)
-            self.dirlist.pop(index)
+            self.updategrid(index = self.selectedrow)
             # reset
-            self.selectedrow = None
-            self.picturepath = None
+            self.resetimage()
+            self.showimagefromindex(self.selectedrow)
             
-    
+            
+            
+    def resetimage(self):
+        emptyimage = PIL.Image.new("RGB", (1,1),"white")
+        image = wx.Image( 1, 1 )
+        image.SetData( emptyimage.tobytes() )        
+        self.m_bitmap.SetBitmap(wx.Bitmap(image))
+        
         
     def btnDeleteBothOnButtonClick( self, event ):
         
         filelist = []
         filelist_check = []
-        
+        rowindices = []
         if isinstance(self.selectedrow,int):
+            
             print("selected")
             targetpath = self.picturepath
             targetname,_ = os.path.splitext(os.path.basename(targetpath))
@@ -519,14 +540,24 @@ class MainFrame(wx.Frame,settings):
                     if date == date_check: #exclude pictures from different folders that happen to have the same name
                         filelist_check.append(basename)
                         filelist.append(path)
+                        rowindices.append(self.pathlist.index(path))
                     
+            rowindices = sorted(rowindices,reverse=True)
+            print(f"rowindices = {rowindices}")
             
-            for path in filelist:
-                os.remove(path)
+            for i,rowindex in enumerate(rowindices):
+                path = filelist[0]
+                filelist.pop(0)
+                send2trash(path)
+                self.updategrid(index = rowindex)
+                self.m_grid.DeleteRows(pos=rowindex, numRows=1, updateLabels=True)
             #lazy way of resetting the grid and lists
-            self.selectedrow = None
+            
+            #self.selectedrow = None
             self.picturepath = None
-            self.m_buttonOnButtonClick(None)
+            self.resetimage()
+            self.showimagefromindex(self.selectedrow)
+            #self.m_buttonOnButtonClick(None)
             
         
         
