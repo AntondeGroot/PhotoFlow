@@ -493,12 +493,11 @@ class MainFrame(wx.Frame,settings):
     def updategrid(self,index = None):
         if isinstance(index,int):
             self.pathlist.pop(index)
+            self.m_grid.DeleteRows(pos=index, numRows=1, updateLabels=True)
         
     def btnDeleteOnButtonClick( self, event ):
         print(f"selected = {self.selectedrow}")
-        if isinstance(self.selectedrow,int):
-            self.m_grid.DeleteRows(pos=self.selectedrow, numRows=1, updateLabels=True)
-            
+        if isinstance(self.selectedrow,int):            
             path = self.picturepath
             print(f"path to remove is {path}")
             #os.remove(path)
@@ -550,8 +549,7 @@ class MainFrame(wx.Frame,settings):
                 filelist.pop(0)
                 send2trash(path)
                 self.updategrid(index = rowindex)
-                self.m_grid.DeleteRows(pos=rowindex, numRows=1, updateLabels=True)
-            #lazy way of resetting the grid and lists
+            
             
             #self.selectedrow = None
             self.picturepath = None
