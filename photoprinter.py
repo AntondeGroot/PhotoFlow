@@ -322,38 +322,41 @@ class MainFrame(wx.Frame,settings):
                         break
 
     def showimagefromindex(self,index):
-        self.m_grid.SelectRow( index, addToSelected=False)
-        
-        self.selectedrow = index
-        filepath = self.pathlist[index]
-        self.picturepath = filepath
-        
-        PanelWidth, PH = self.m_panelBitmap.GetSize()
-        
-        if IsRAW(filepath):
-            image = RAW_to_PIL(filepath)
-        else:
-            image = JPG_to_PIL(filepath)
-        #use convert RGB to deal with 32 bit images, they will otherwise display weird images as if it is scattered over multiple lines
-        image = image.convert('RGB')
-        width, height = image.size
-        
-        PanelHeight = round(float(PanelWidth)*height/width)
-        
-        if PanelHeight > PH:
-            fraction = float(PH)/PanelHeight 
-            PanelHeight = PH
-            PanelWidth = round(fraction*PanelWidth)
-        
-        image = image.resize((PanelWidth, PanelHeight), PIL.Image.ANTIALIAS)    
-        
-        
-        width, height = image.size
-        image2 = wx.Image( width, height )
-        image.tobytes() 
-        
-        image2.SetData( image.tobytes() )
-        self.m_bitmap.SetBitmap(wx.Bitmap(image2))                      
+        try:
+            self.m_grid.SelectRow( index, addToSelected=False)
+            
+            self.selectedrow = index
+            filepath = self.pathlist[index]
+            self.picturepath = filepath
+            
+            PanelWidth, PH = self.m_panelBitmap.GetSize()
+            
+            if IsRAW(filepath):
+                image = RAW_to_PIL(filepath)
+            else:
+                image = JPG_to_PIL(filepath)
+            #use convert RGB to deal with 32 bit images, they will otherwise display weird images as if it is scattered over multiple lines
+            image = image.convert('RGB')
+            width, height = image.size
+            
+            PanelHeight = round(float(PanelWidth)*height/width)
+            
+            if PanelHeight > PH:
+                fraction = float(PH)/PanelHeight 
+                PanelHeight = PH
+                PanelWidth = round(fraction*PanelWidth)
+            
+            image = image.resize((PanelWidth, PanelHeight), PIL.Image.ANTIALIAS)    
+            
+            
+            width, height = image.size
+            image2 = wx.Image( width, height )
+            image.tobytes() 
+            
+            image2.SetData( image.tobytes() )
+            self.m_bitmap.SetBitmap(wx.Bitmap(image2))                      
+        except:
+            self.resetimage()
     def find_JPGRAW_files(self):
         """find both JPG and RAW files and return their indices in descending order
         so that you can easily delete their entries without making a counting mistake."""
