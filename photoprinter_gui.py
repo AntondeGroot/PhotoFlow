@@ -91,29 +91,150 @@ class MyFrame ( wx.Frame ):
 		
 		bSizer92 = wx.BoxSizer( wx.HORIZONTAL )
 		
+		self.m_staticline32 = wx.StaticLine( self.panel0, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_VERTICAL )
+		bSizer92.Add( self.m_staticline32, 0, wx.EXPAND |wx.ALL, 0 )
+		
+		bSizer16 = wx.BoxSizer( wx.VERTICAL )
+		
+		bSizer17 = wx.BoxSizer( wx.HORIZONTAL )
+		
+		
+		bSizer17.Add( ( 0, 0), 1, wx.EXPAND, 5 )
+		
+		self.m_staticText7 = wx.StaticText( self.panel0, wx.ID_ANY, u"Editing", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText7.Wrap( -1 )
+		bSizer17.Add( self.m_staticText7, 0, wx.ALL, 5 )
+		
+		
+		bSizer17.Add( ( 0, 0), 1, wx.EXPAND, 5 )
+		
+		
+		bSizer16.Add( bSizer17, 0, wx.EXPAND, 5 )
+		
+		bSizer18 = wx.BoxSizer( wx.HORIZONTAL )
+		
 		self.btnEdit = wx.Button( self.panel0, wx.ID_ANY, u"Edit Image", wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer92.Add( self.btnEdit, 0, wx.ALL, 5 )
+		bSizer18.Add( self.btnEdit, 0, wx.ALL, 5 )
 		
 		self.m_buttonImDir = wx.Button( self.panel0, wx.ID_ANY, u"Open Image Dir", wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer92.Add( self.m_buttonImDir, 0, wx.ALL, 5 )
+		bSizer18.Add( self.m_buttonImDir, 0, wx.ALL, 5 )
+		
+		
+		bSizer16.Add( bSizer18, 0, wx.EXPAND, 5 )
+		
+		
+		bSizer92.Add( bSizer16, 0, wx.EXPAND, 5 )
 		
 		self.m_staticline3 = wx.StaticLine( self.panel0, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_VERTICAL )
 		bSizer92.Add( self.m_staticline3, 0, wx.EXPAND |wx.ALL, 0 )
 		
-		self.btnPrintQueue = wx.Button( self.panel0, wx.ID_ANY, u"Add to Print Queue", wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer92.Add( self.btnPrintQueue, 0, wx.ALL, 5 )
+		bSizer10 = wx.BoxSizer( wx.VERTICAL )
 		
-		self.btnDelete = wx.Button( self.panel0, wx.ID_ANY, u"Delete Image", wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer92.Add( self.btnDelete, 0, wx.ALL, 5 )
+		bSizer12 = wx.BoxSizer( wx.HORIZONTAL )
 		
-		self.btnDeleteBoth = wx.Button( self.panel0, wx.ID_ANY, u"Delete RAW+JPG", wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer92.Add( self.btnDeleteBoth, 0, wx.ALL, 5 )
+		
+		bSizer12.Add( ( 0, 0), 1, wx.EXPAND, 5 )
+		
+		self.m_staticText5 = wx.StaticText( self.panel0, wx.ID_ANY, u"Add to Print Queue", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText5.Wrap( -1 )
+		bSizer12.Add( self.m_staticText5, 0, wx.ALL, 5 )
+		
+		
+		bSizer12.Add( ( 0, 0), 1, wx.EXPAND, 5 )
+		
+		
+		bSizer10.Add( bSizer12, 0, wx.EXPAND, 0 )
+		
+		bSizer11 = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.btnPrintQueue = wx.Button( self.panel0, wx.ID_ANY, u"This Image", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer11.Add( self.btnPrintQueue, 0, wx.ALL, 5 )
+		
+		self.btnPrintQueueBoth = wx.Button( self.panel0, wx.ID_ANY, u"RAW+JPG", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer11.Add( self.btnPrintQueueBoth, 0, wx.ALL, 5 )
+		
+		
+		bSizer10.Add( bSizer11, 0, wx.EXPAND, 5 )
+		
+		
+		bSizer92.Add( bSizer10, 0, wx.EXPAND, 5 )
+		
+		self.m_staticline31 = wx.StaticLine( self.panel0, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_VERTICAL )
+		bSizer92.Add( self.m_staticline31, 0, wx.EXPAND |wx.ALL, 0 )
+		
+		bSizer13 = wx.BoxSizer( wx.VERTICAL )
+		
+		bSizer14 = wx.BoxSizer( wx.HORIZONTAL )
+		
+		
+		bSizer14.Add( ( 0, 0), 1, wx.EXPAND, 5 )
+		
+		self.m_staticText6 = wx.StaticText( self.panel0, wx.ID_ANY, u"Delete Image", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText6.Wrap( -1 )
+		bSizer14.Add( self.m_staticText6, 0, wx.ALL, 5 )
+		
+		
+		bSizer14.Add( ( 0, 0), 1, wx.EXPAND, 5 )
+		
+		
+		bSizer13.Add( bSizer14, 0, wx.EXPAND, 5 )
+		
+		bSizer15 = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.btnDelete = wx.Button( self.panel0, wx.ID_ANY, u"This Image", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer15.Add( self.btnDelete, 0, wx.ALL, 5 )
+		
+		self.btnDeleteBoth = wx.Button( self.panel0, wx.ID_ANY, u"RAW+JPG", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer15.Add( self.btnDeleteBoth, 0, wx.ALL, 5 )
+		
+		
+		bSizer13.Add( bSizer15, 0, wx.EXPAND, 5 )
+		
+		
+		bSizer92.Add( bSizer13, 0, wx.EXPAND, 5 )
+		
+		self.m_staticline311 = wx.StaticLine( self.panel0, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_VERTICAL )
+		bSizer92.Add( self.m_staticline311, 0, wx.EXPAND |wx.ALL, 0 )
 		
 		
 		bSizer92.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 		
+		bSizer19 = wx.BoxSizer( wx.VERTICAL )
+		
+		bSizer20 = wx.BoxSizer( wx.HORIZONTAL )
+		
+		
+		bSizer20.Add( ( 0, 0), 1, wx.EXPAND, 5 )
+		
+		self.m_staticText8 = wx.StaticText( self.panel0, wx.ID_ANY, u"Export", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText8.Wrap( -1 )
+		bSizer20.Add( self.m_staticText8, 0, wx.ALL, 5 )
+		
+		
+		bSizer20.Add( ( 0, 0), 1, wx.EXPAND, 5 )
+		
+		
+		bSizer19.Add( bSizer20, 0, wx.EXPAND, 0 )
+		
+		bSizer21 = wx.BoxSizer( wx.HORIZONTAL )
+		
+		
+		bSizer21.Add( ( 0, 0), 1, wx.EXPAND, 5 )
+		
 		self.btnCollectPrints = wx.Button( self.panel0, wx.ID_ANY, u"Export Print Queue", wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer92.Add( self.btnCollectPrints, 0, wx.ALL, 5 )
+		bSizer21.Add( self.btnCollectPrints, 0, wx.ALL, 5 )
+		
+		
+		bSizer21.Add( ( 0, 0), 1, wx.EXPAND, 5 )
+		
+		
+		bSizer19.Add( bSizer21, 0, wx.EXPAND, 5 )
+		
+		
+		bSizer92.Add( bSizer19, 0, wx.EXPAND, 5 )
+		
+		self.m_staticline33 = wx.StaticLine( self.panel0, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_VERTICAL )
+		bSizer92.Add( self.m_staticline33, 0, wx.EXPAND |wx.ALL, 0 )
 		
 		
 		bSizer84.Add( bSizer92, 0, wx.EXPAND, 5 )
@@ -217,6 +338,7 @@ class MyFrame ( wx.Frame ):
 		self.btnEdit.Bind( wx.EVT_BUTTON, self.btnEditOnButtonClick )
 		self.m_buttonImDir.Bind( wx.EVT_BUTTON, self.m_buttonImDirOnButtonClick )
 		self.btnPrintQueue.Bind( wx.EVT_BUTTON, self.btnPrintQueueOnButtonClick )
+		self.btnPrintQueueBoth.Bind( wx.EVT_BUTTON, self.btnPrintQueueBothOnButtonClick )
 		self.btnDelete.Bind( wx.EVT_BUTTON, self.btnDeleteOnButtonClick )
 		self.btnDeleteBoth.Bind( wx.EVT_BUTTON, self.btnDeleteBothOnButtonClick )
 		self.btnCollectPrints.Bind( wx.EVT_BUTTON, self.btnCollectPrintsOnButtonClick )
@@ -246,6 +368,9 @@ class MyFrame ( wx.Frame ):
 		event.Skip()
 	
 	def btnPrintQueueOnButtonClick( self, event ):
+		event.Skip()
+	
+	def btnPrintQueueBothOnButtonClick( self, event ):
 		event.Skip()
 	
 	def btnDeleteOnButtonClick( self, event ):
