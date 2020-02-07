@@ -26,6 +26,7 @@ class MyFrame ( wx.Frame ):
 		bSizer7 = wx.BoxSizer( wx.VERTICAL )
 		
 		self.panel0 = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		self.panel0.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), 71, 90, 90, False, wx.EmptyString ) )
 		self.panel0.SetBackgroundColour( wx.Colour( 254, 240, 231 ) )
 		
 		bSizer84 = wx.BoxSizer( wx.VERTICAL )
@@ -41,6 +42,8 @@ class MyFrame ( wx.Frame ):
 		
 		
 		bSizer84.Add( bSizer87, 0, wx.EXPAND, 5 )
+		
+		bSizer24 = wx.BoxSizer( wx.HORIZONTAL )
 		
 		fgSizer1 = wx.FlexGridSizer( 0, 4, 0, 0 )
 		fgSizer1.SetFlexibleDirection( wx.BOTH )
@@ -74,7 +77,10 @@ class MyFrame ( wx.Frame ):
 		fgSizer1.Add( self.m_buttonDirpickerExe, 0, wx.ALL, 5 )
 		
 		
-		bSizer84.Add( fgSizer1, 0, wx.EXPAND, 5 )
+		bSizer24.Add( fgSizer1, 0, wx.EXPAND, 5 )
+		
+		
+		bSizer84.Add( bSizer24, 1, wx.EXPAND, 5 )
 		
 		bSizer91 = wx.BoxSizer( wx.HORIZONTAL )
 		
@@ -199,6 +205,15 @@ class MyFrame ( wx.Frame ):
 		
 		bSizer92.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 		
+		self.m_btnDown = wx.Button( self.panel0, wx.ID_ANY, u"MyButton", wx.DefaultPosition, wx.Size( 0,0 ), 0 )
+		bSizer92.Add( self.m_btnDown, 0, wx.ALL, 5 )
+		
+		self.m_btnUp = wx.Button( self.panel0, wx.ID_ANY, u"MyButton", wx.DefaultPosition, wx.Size( 0,0 ), 0 )
+		bSizer92.Add( self.m_btnUp, 0, wx.ALL, 5 )
+		
+		self.m_staticline3111 = wx.StaticLine( self.panel0, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_VERTICAL )
+		bSizer92.Add( self.m_staticline3111, 0, wx.EXPAND |wx.ALL, 0 )
+		
 		bSizer19 = wx.BoxSizer( wx.VERTICAL )
 		
 		bSizer20 = wx.BoxSizer( wx.HORIZONTAL )
@@ -209,6 +224,10 @@ class MyFrame ( wx.Frame ):
 		self.m_staticText8 = wx.StaticText( self.panel0, wx.ID_ANY, u"Export", wx.DefaultPosition, wx.DefaultSize, 0 )
 		self.m_staticText8.Wrap( -1 )
 		bSizer20.Add( self.m_staticText8, 0, wx.ALL, 5 )
+		
+		self.m_checkBoxRAW = wx.CheckBox( self.panel0, wx.ID_ANY, u"RAW", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_checkBoxRAW.SetValue(True) 
+		bSizer20.Add( self.m_checkBoxRAW, 0, wx.ALL, 5 )
 		
 		
 		bSizer20.Add( ( 0, 0), 1, wx.EXPAND, 5 )
@@ -221,8 +240,11 @@ class MyFrame ( wx.Frame ):
 		
 		bSizer21.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 		
-		self.btnCollectPrints = wx.Button( self.panel0, wx.ID_ANY, u"Export Print Queue", wx.DefaultPosition, wx.DefaultSize, 0 )
-		bSizer21.Add( self.btnCollectPrints, 0, wx.ALL, 5 )
+		self.btnMovePrints = wx.Button( self.panel0, wx.ID_ANY, u"Move files", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer21.Add( self.btnMovePrints, 0, wx.ALL, 5 )
+		
+		self.btnCopyPrints = wx.Button( self.panel0, wx.ID_ANY, u"Duplicate", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer21.Add( self.btnCopyPrints, 0, wx.ALL, 5 )
 		
 		
 		bSizer21.Add( ( 0, 0), 1, wx.EXPAND, 5 )
@@ -304,8 +326,8 @@ class MyFrame ( wx.Frame ):
 		
 		bSizer28 = wx.BoxSizer( wx.VERTICAL )
 		
-		self.m_bitmap = wx.StaticBitmap( self.m_panelBitmap, wx.ID_ANY, wx.ArtProvider.GetBitmap( wx.ART_HELP_BOOK,  ), wx.DefaultPosition, wx.Size( -1,-1 ), 0 )
-		bSizer28.Add( self.m_bitmap, 0, 0, 10 )
+		self.m_bitmap = wx.StaticBitmap( self.m_panelBitmap, wx.ID_ANY, wx.NullBitmap, wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer28.Add( self.m_bitmap, 0, wx.ALL, 5 )
 		
 		
 		self.m_panelBitmap.SetSizer( bSizer28 )
@@ -327,6 +349,15 @@ class MyFrame ( wx.Frame ):
 		
 		self.SetSizer( bSizer7 )
 		self.Layout()
+		self.m_menubar1 = wx.MenuBar( 0 )
+		self.m_menuHelp = wx.Menu()
+		self.m_menuItemShortcuts = wx.MenuItem( self.m_menuHelp, wx.ID_ANY, u"Shortcuts", wx.EmptyString, wx.ITEM_NORMAL )
+		self.m_menuHelp.AppendItem( self.m_menuItemShortcuts )
+		
+		self.m_menubar1.Append( self.m_menuHelp, u"Help" ) 
+		
+		self.SetMenuBar( self.m_menubar1 )
+		
 		
 		self.Centre( wx.BOTH )
 		
@@ -341,8 +372,14 @@ class MyFrame ( wx.Frame ):
 		self.btnPrintQueueBoth.Bind( wx.EVT_BUTTON, self.btnPrintQueueBothOnButtonClick )
 		self.btnDelete.Bind( wx.EVT_BUTTON, self.btnDeleteOnButtonClick )
 		self.btnDeleteBoth.Bind( wx.EVT_BUTTON, self.btnDeleteBothOnButtonClick )
-		self.btnCollectPrints.Bind( wx.EVT_BUTTON, self.btnCollectPrintsOnButtonClick )
+		self.m_btnDown.Bind( wx.EVT_BUTTON, self.m_btnDownOnButtonClick )
+		self.m_btnUp.Bind( wx.EVT_BUTTON, self.m_btnUpOnButtonClick )
+		self.btnMovePrints.Bind( wx.EVT_BUTTON, self.btnMovePrintsOnButtonClick )
+		self.btnCopyPrints.Bind( wx.EVT_BUTTON, self.btnCopyPrintsOnButtonClick )
 		self.m_grid.Bind( wx.grid.EVT_GRID_CELL_LEFT_CLICK, self.m_gridOnGridCellLeftClick )
+		self.m_bitmap.Bind( wx.EVT_LEFT_DOWN, self.m_bitmapOnLeftDown )
+		self.m_bitmap.Bind( wx.EVT_RIGHT_DOWN, self.m_bitmapOnRightDown )
+		self.Bind( wx.EVT_MENU, self.m_menuItemShortcutsOnMenuSelection, id = self.m_menuItemShortcuts.GetId() )
 	
 	def __del__( self ):
 		pass
@@ -379,10 +416,100 @@ class MyFrame ( wx.Frame ):
 	def btnDeleteBothOnButtonClick( self, event ):
 		event.Skip()
 	
-	def btnCollectPrintsOnButtonClick( self, event ):
+	def m_btnDownOnButtonClick( self, event ):
+		event.Skip()
+	
+	def m_btnUpOnButtonClick( self, event ):
+		event.Skip()
+	
+	def btnMovePrintsOnButtonClick( self, event ):
+		event.Skip()
+	
+	def btnCopyPrintsOnButtonClick( self, event ):
 		event.Skip()
 	
 	def m_gridOnGridCellLeftClick( self, event ):
 		event.Skip()
+	
+	def m_bitmapOnLeftDown( self, event ):
+		event.Skip()
+	
+	def m_bitmapOnRightDown( self, event ):
+		event.Skip()
+	
+	def m_menuItemShortcutsOnMenuSelection( self, event ):
+		event.Skip()
+	
+
+###########################################################################
+## Class MyDialog1
+###########################################################################
+
+class MyDialog1 ( wx.Dialog ):
+	
+	def __init__( self, parent ):
+		wx.Dialog.__init__ ( self, parent, id = wx.ID_ANY, title = wx.EmptyString, pos = wx.DefaultPosition, size = wx.DefaultSize, style = wx.DEFAULT_DIALOG_STYLE )
+		
+		self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
+		
+		bSizer25 = wx.BoxSizer( wx.VERTICAL )
+		
+		self.m_panel5 = wx.Panel( self, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.TAB_TRAVERSAL )
+		sbSizer1 = wx.StaticBoxSizer( wx.StaticBox( self.m_panel5, wx.ID_ANY, u"Short cuts" ), wx.VERTICAL )
+		
+		fgSizer2 = wx.FlexGridSizer( 0, 2, 0, 0 )
+		fgSizer2.SetFlexibleDirection( wx.BOTH )
+		fgSizer2.SetNonFlexibleGrowMode( wx.FLEX_GROWMODE_SPECIFIED )
+		
+		self.m_staticText9 = wx.StaticText( sbSizer1.GetStaticBox(), wx.ID_ANY, u"Delete RAW+JPG", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText9.Wrap( -1 )
+		fgSizer2.Add( self.m_staticText9, 0, wx.ALL, 5 )
+		
+		self.m_staticText10 = wx.StaticText( sbSizer1.GetStaticBox(), wx.ID_ANY, u"Delete", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText10.Wrap( -1 )
+		self.m_staticText10.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), 70, 90, 92, False, wx.EmptyString ) )
+		
+		fgSizer2.Add( self.m_staticText10, 0, wx.ALL, 5 )
+		
+		self.m_staticText11 = wx.StaticText( sbSizer1.GetStaticBox(), wx.ID_ANY, u"Add RAW+JPG \nto print queue", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText11.Wrap( -1 )
+		self.m_staticText11.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), 70, 90, 90, False, wx.EmptyString ) )
+		
+		fgSizer2.Add( self.m_staticText11, 0, wx.ALL, 5 )
+		
+		self.m_staticText12 = wx.StaticText( sbSizer1.GetStaticBox(), wx.ID_ANY, u"Enter", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText12.Wrap( -1 )
+		self.m_staticText12.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), 70, 90, 92, False, wx.EmptyString ) )
+		
+		fgSizer2.Add( self.m_staticText12, 0, wx.ALL, 5 )
+		
+		self.m_staticText13 = wx.StaticText( sbSizer1.GetStaticBox(), wx.ID_ANY, u"Add This image\nto print queue", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText13.Wrap( -1 )
+		fgSizer2.Add( self.m_staticText13, 0, wx.ALL, 5 )
+		
+		self.m_staticText14 = wx.StaticText( sbSizer1.GetStaticBox(), wx.ID_ANY, u"Spacebar", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText14.Wrap( -1 )
+		self.m_staticText14.SetFont( wx.Font( wx.NORMAL_FONT.GetPointSize(), 70, 90, 92, False, wx.EmptyString ) )
+		
+		fgSizer2.Add( self.m_staticText14, 0, wx.ALL, 5 )
+		
+		
+		sbSizer1.Add( fgSizer2, 1, wx.EXPAND, 5 )
+		
+		
+		self.m_panel5.SetSizer( sbSizer1 )
+		self.m_panel5.Layout()
+		sbSizer1.Fit( self.m_panel5 )
+		bSizer25.Add( self.m_panel5, 1, wx.EXPAND |wx.ALL, 5 )
+		
+		
+		self.SetSizer( bSizer25 )
+		self.Layout()
+		bSizer25.Fit( self )
+		
+		self.Centre( wx.BOTH )
+	
+	def __del__( self ):
+		pass
 	
 
