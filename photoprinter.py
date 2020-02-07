@@ -14,7 +14,6 @@ import json
 from pathlib import Path
 import rawpy #install rawpy not by using CMD's "pip install rawpy" but go to 'anaconda propt' then use "pip install rawpy"
 import exifread #via 'Anaconda prompt'
-from pathlib import Path
 import PIL
 import ctypes
 from send2trash import send2trash
@@ -37,15 +36,6 @@ def RAW_to_PIL(filename):
 
 def JPG_to_PIL(filename):
     return PIL.Image.open(filename)
-
-def mark_as_edited():
-    pass
-def mark_as_printqueue():
-    pass
-def mark_as_printed():
-    pass
-
-#from StringIO import StringIO
 
 
 
@@ -109,11 +99,15 @@ class pictures():
         mode = mode.lower()
         
         if mode == 'edit':
-            if self.edited not in path:
+            """If you want to edit an image it will add the appropriate suffix to the filename
+            If it has already been edited before it will not add it again
+            If it is already in the printqueue but you want to touch it up, it will not add it."""
+            if self.edited not in path and self.queue not in path:
                 path_new = self.AddToPath(path,self.edited)
             else:
-                path_new = path#if you want to re-edit the file
+                path_new = path
             return path_new
+        
         elif mode == 'queue':
             if self.queue not in path:
                 path_new = self.AddToPath(path,self.queue)
@@ -283,7 +277,7 @@ class MainFrame(wx.Frame,settings):
                 
         self.imagetypes = ['All','JPG & PNG','RAW']
         
-        
+        self.imagerotation = 0
         self.choiceindex = 0
         #self.choice2index = 0
         self.m_choice.SetItems(self.pictures.getmodes())
@@ -293,6 +287,25 @@ class MainFrame(wx.Frame,settings):
         
         self.Update()
         self.settextctrl()    
+        
+        #accelerators
+        
+        IDup = wx.NewIdRef()
+        IDdown = wx.NewIdRef()
+        IDdel = wx.NewIdRef()  #delete both
+        IDenter = wx.NewIdRef() #select both to queue
+        IDspace = wx.NewIdRef()
+        self.Bind( wx.EVT_MENU, self.m_btnUpOnButtonClick, id = IDup    )
+        self.Bind( wx.EVT_MENU, self.m_btnDownOnButtonClick, id = IDdown    )
+        self.Bind( wx.EVT_MENU, self.btnDeleteBothOnButtonClick, id = IDdel    )
+        self.Bind( wx.EVT_MENU, self.btnPrintQueueBothOnButtonClick, id = IDenter    )
+        self.Bind( wx.EVT_MENU, self.btnPrintQueueOnButtonClick, id = IDspace    )
+        
+        entries = wx.AcceleratorTable([(wx.ACCEL_NORMAL, wx.WXK_UP,   IDup),(wx.ACCEL_NORMAL, wx.WXK_DOWN,   IDdown),
+                                       (wx.ACCEL_NORMAL, wx.WXK_DELETE,   IDdel),(wx.ACCEL_NORMAL, wx.WXK_RETURN,   IDenter),
+                                       (wx.ACCEL_NORMAL, wx.WXK_SPACE,   IDspace)])
+        self.SetAcceleratorTable(entries)    
+        
     #%% functions
     def updategrid(self,index = None):
         if isinstance(index,int):
@@ -335,6 +348,7 @@ class MainFrame(wx.Frame,settings):
                 image = RAW_to_PIL(filepath)
             else:
                 image = JPG_to_PIL(filepath)
+            image = image.rotate(self.imagerotation)
             #use convert RGB to deal with 32 bit images, they will otherwise display weird images as if it is scattered over multiple lines
             image = image.convert('RGB')
             width, height = image.size
@@ -391,8 +405,45 @@ class MainFrame(wx.Frame,settings):
                 filelist.pop(0)
                 send2trash(path)
                 self.updategrid(index = rowindex)
-                
+    def looknextimageinstance(self, mode):
+        """"""
+        if isinstance(self.selectedrow,int):
+            try:
+                filepath = self.pathlist[self.selectedrow]
+                filename, file_extension = os.path.splitext(filepath)
+                i = 0
+                index = self.selectedrow
+                while i < 10:
+                    i += mode
+                    try:
+                        index += mode
+                        filepath = self.pathlist[index]
+                        _, extension = os.path.splitext(filepath)
+                        if extension.lower() == file_extension.lower(): #.jpg and .JPG should be regarded as being the same
+                            self.selectedrow = index
+                            break
+                    except:
+                        print("error")
+                        pass
+            except:
+                self.selectedrow = len(self.pathlist)-1
+            self.resetimage()
+            self.showimagefromindex(self.selectedrow)
     #%% button events  
+    def m_menuItemShortcutsOnMenuSelection(self,event):
+        pass
+    
+    def m_bitmapOnLeftDown(self,event):
+        self.imagerotation += 90
+        self.showimagefromindex(self.selectedrow)
+    def m_bitmapOnRightDown(self,event):
+        self.imagerotation -= 90
+        self.showimagefromindex(self.selectedrow)
+        
+    def m_btnDownOnButtonClick(self,event):
+        self.looknextimageinstance(1)
+    def m_btnUpOnButtonClick(self,event):
+        self.looknextimageinstance(-1)
         
     def m_choiceOnChoice(self,event):
         self.choiceindex = self.m_choice.GetSelection()
@@ -430,22 +481,12 @@ class MainFrame(wx.Frame,settings):
             # reset
             self.resetimage()
             self.showimagefromindex(self.selectedrow)    
-        
-    def btnCollectPrintsOnButtonClick(self,event):
-        
-        # collect all printqueue files
-        self.printpathlist = []
-        for root, dirs, files in os.walk(self.root_directory, topdown=True):
-            for name in files:                   
-                #variables
-                path = os.path.join(root, name)
-                filename, file_extension = os.path.splitext(path)
-                if self.pictures.checktype(filename = filename ,mode = 'print queue'):
-                    newpath = self.pictures.addpicmode(path = path,mode='finished') #printqueue to finished
-                    # these will be copied to a folder
-                    if IsNotRAW(newpath):
-                        self.printpathlist.append(newpath)
-        
+    
+    def btnMovePrintsOnButtonClick(self,event):
+        modes = self.pictures.getmodes() 
+        mode = modes[self.choiceindex]
+        #unfinished photos can just be moved around, but those that are in the print queue will have a name change to indicate they are finished
+        exportfiles = False
         # open dir where to export it to 
         with wx.DirDialog(self, "Choose which directory to select",style=wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST,defaultPath=self.export_directory) as DirDialog:
             #fileDialog.SetPath(str(self.notesdir)+'\.')
@@ -457,14 +498,49 @@ class MainFrame(wx.Frame,settings):
                 self.settings_set()
                 self.settextctrl()
                 self.Update()
-                
-        if os.path.exists(self.export_directory):
-            if self.printpathlist:
-                for filepath in self.printpathlist:
-                    shutil.copy2(filepath,self.export_directory)
-                    #copy2 copies metadata, it only needs a directory as destination not the full path to a file
+                exportfiles = True
+        
+        if exportfiles and self.pathlist:
+            for path in self.pathlist:
+                if mode.lower() == 'print queue':
+                    newpath = self.pictures.addpicmode(path = path,mode='finished') #printqueue to finished
+                else:
+                    newpath = path
+                if self.m_checkBoxRAW.IsChecked():
+                    #export both raw and jpg files
+                    shutil.move(newpath,self.export_directory)
+                else:
+                    #only export nonraw files
+                    if IsNotRAW(newpath):
+                        shutil.move(newpath,self.export_directory)
+        self.resetimage()
+    
+    def btnCopyPrintsOnButtonClick(self,event):
+        
+        exportfiles = False
+        # open dir where to export it to 
+        with wx.DirDialog(self, "Choose which directory to select",style=wx.DD_DEFAULT_STYLE | wx.DD_DIR_MUST_EXIST,defaultPath=self.export_directory) as DirDialog:
+            #fileDialog.SetPath(str(self.notesdir)+'\.')
+            if DirDialog.ShowModal() == wx.ID_CANCEL:
+                pass
+                return None    # the user changed their mind
             else:
-                MessageBox(0, "No photos were found.", "Message", MB_ICONINFORMATION)
+                exportfiles = True
+                self.export_directory = DirDialog.GetPath()
+                self.settings_set()
+                self.settextctrl()
+                self.Update()
+                
+        if exportfiles and self.pathlist:
+            for path in self.pathlist:
+                newpath = self.pictures.addpicmode(path = path,mode='finished') #printqueue to finished
+                if self.m_checkBoxRAW.IsChecked():
+                    #export both raw and jpg files
+                    shutil.copy2(newpath,self.export_directory)
+                else:
+                    #only export nonraw files
+                    if IsNotRAW(newpath):
+                        shutil.copy2(newpath,self.export_directory)
         self.resetimage()
     
 
