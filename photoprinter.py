@@ -115,8 +115,15 @@ class pictures():
                 path_new = path
             return path_new
         elif mode == 'finished':
-            path_new = path.replace(self.queue,self.finished)
-            os.rename(path,path_new)
+            """if it was in the print queue it will be changed to 'finished' 
+            otherwise it will just copy / move the files. This way you can always
+            keep on moving files that were already printed once."""
+            if self.queue in path:
+                path_new = path.replace(self.queue,self.finished)
+                os.rename(path,path_new)
+            else:
+                path_new = path
+            
             return path_new
         else:
              raise ValueError("input to method addpicmode was incorrect")
