@@ -202,6 +202,35 @@ class MyFrame ( wx.Frame ):
 		self.m_staticline311 = wx.StaticLine( self.panel0, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_VERTICAL )
 		bSizer92.Add( self.m_staticline311, 0, wx.EXPAND |wx.ALL, 0 )
 		
+		bSizer25 = wx.BoxSizer( wx.VERTICAL )
+		
+		bSizer241 = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.m_staticText15 = wx.StaticText( self.panel0, wx.ID_ANY, u"Image size", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText15.Wrap( -1 )
+		bSizer241.Add( self.m_staticText15, 0, wx.ALL, 5 )
+		
+		self.m_txtImageSize = wx.TextCtrl( self.panel0, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.Size( 75,-1 ), wx.TE_READONLY )
+		bSizer241.Add( self.m_txtImageSize, 0, wx.ALL, 5 )
+		
+		
+		bSizer25.Add( bSizer241, 1, wx.EXPAND, 5 )
+		
+		bSizer261 = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.m_staticText17 = wx.StaticText( self.panel0, wx.ID_ANY, u"Date", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText17.Wrap( -1 )
+		bSizer261.Add( self.m_staticText17, 0, wx.ALL, 5 )
+		
+		self.m_txtImageDate = wx.TextCtrl( self.panel0, wx.ID_ANY, wx.EmptyString, wx.DefaultPosition, wx.DefaultSize, wx.TE_READONLY )
+		bSizer261.Add( self.m_txtImageDate, 0, wx.ALL, 5 )
+		
+		
+		bSizer25.Add( bSizer261, 1, wx.EXPAND, 5 )
+		
+		
+		bSizer92.Add( bSizer25, 1, wx.EXPAND, 5 )
+		
 		
 		bSizer92.Add( ( 0, 0), 1, wx.EXPAND, 5 )
 		
