@@ -7,7 +7,7 @@ Created on Fri Jan 17 20:08:39 2020
 from PIL import Image
 import wx
 import os
-import photoprinter_gui as gui
+import photoflow_gui as gui
 import subprocess
 import shutil
 import json
@@ -139,7 +139,7 @@ def GetShortPath(dirpath):
     b = os.path.basename(path.parent)
     shortpath = os.path.join(a,b)
     return shortpath
-
+import datetime
 import PIL
 def get_date_taken(path):
     """EXIF date taken: 2017:06:04 hh/mn/ss
@@ -150,6 +150,9 @@ def get_date_taken(path):
             tags = exifread.process_file(fh, stop_tag="EXIF DateTimeOriginal")
             dateTaken = str(tags["EXIF DateTimeOriginal"])
             dateTaken = dateTaken[2:10].replace(':','-')
+            
+    
+            dateTaken = datetime.datetime.strptime(dateTaken, "%y-%m-%d").strftime("%d-%m-%y")
         
     except:
         dateTaken = '00-00-00'
@@ -255,7 +258,7 @@ class MainFrame(wx.Frame,settings):
     def __init__(self,parent): 
         gui.MyFrame.__init__(self,parent)
         datadir = os.getenv("LOCALAPPDATA")
-        app = Path(datadir,"PhotoPrinter")
+        app = Path(datadir,"PhotoFlow")
         self.pictures = pictures()
         self.picturepath = None
         
@@ -312,6 +315,7 @@ class MainFrame(wx.Frame,settings):
                                        (wx.ACCEL_NORMAL, wx.WXK_DELETE,   IDdel),(wx.ACCEL_NORMAL, wx.WXK_RETURN,   IDenter),
                                        (wx.ACCEL_NORMAL, wx.WXK_SPACE,   IDspace)])
         self.SetAcceleratorTable(entries)    
+        self.m_buttonOnButtonClick(None)
         
     #%% functions
     def updategrid(self,index = None):
@@ -355,6 +359,11 @@ class MainFrame(wx.Frame,settings):
                 image = RAW_to_PIL(filepath)
             else:
                 image = JPG_to_PIL(filepath)
+            imagesize_bytes = os.path.getsize(filepath)
+            imagesize_Mbytes = imagesize_bytes/10**6
+            self.m_txtImageSize.SetValue(f"{round(imagesize_Mbytes,2)} MB" )
+            imagedate = get_date_taken(filepath)
+            self.m_txtImageDate.SetValue(f"{imagedate}" )
             image = image.rotate(self.imagerotation)
             #use convert RGB to deal with 32 bit images, they will otherwise display weird images as if it is scattered over multiple lines
             image = image.convert('RGB')
