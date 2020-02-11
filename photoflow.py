@@ -429,7 +429,7 @@ class MainFrame(wx.Frame,settings):
                 filename, file_extension = os.path.splitext(filepath)
                 i = 0
                 index = self.selectedrow
-                while i < 10:
+                while abs(i) < 10:
                     i += mode
                     try:
                         index += mode
