@@ -18,7 +18,7 @@ import wx.grid
 class MyFrame ( wx.Frame ):
 	
 	def __init__( self, parent ):
-		wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = u"Flashbook", pos = wx.DefaultPosition, size = wx.Size( 971,402 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
+		wx.Frame.__init__ ( self, parent, id = wx.ID_ANY, title = u"Flashbook", pos = wx.DefaultPosition, size = wx.Size( 1474,402 ), style = wx.DEFAULT_FRAME_STYLE|wx.TAB_TRAVERSAL )
 		
 		self.SetSizeHintsSz( wx.DefaultSize, wx.DefaultSize )
 		self.SetFont( wx.Font( 9, 74, 90, 90, False, "Arial" ) )
@@ -229,7 +229,39 @@ class MyFrame ( wx.Frame ):
 		bSizer25.Add( bSizer261, 1, wx.EXPAND, 5 )
 		
 		
-		bSizer92.Add( bSizer25, 1, wx.EXPAND, 5 )
+		bSizer92.Add( bSizer25, 0, wx.EXPAND, 5 )
+		
+		self.m_staticline3113 = wx.StaticLine( self.panel0, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_VERTICAL )
+		bSizer92.Add( self.m_staticline3113, 0, wx.EXPAND |wx.ALL, 0 )
+		
+		bSizer251 = wx.BoxSizer( wx.VERTICAL )
+		
+		bSizer2411 = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.m_staticText151 = wx.StaticText( self.panel0, wx.ID_ANY, u"RAW images", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_staticText151.Wrap( -1 )
+		bSizer2411.Add( self.m_staticText151, 0, wx.ALL, 5 )
+		
+		
+		bSizer251.Add( bSizer2411, 1, wx.EXPAND, 5 )
+		
+		bSizer2611 = wx.BoxSizer( wx.HORIZONTAL )
+		
+		self.m_radioBtnBW = wx.RadioButton( self.panel0, wx.ID_ANY, u"Quickload (BW)", wx.DefaultPosition, wx.DefaultSize, 0 )
+		bSizer2611.Add( self.m_radioBtnBW, 0, wx.ALL, 5 )
+		
+		self.m_radioBtnColor = wx.RadioButton( self.panel0, wx.ID_ANY, u"Slow (color)", wx.DefaultPosition, wx.DefaultSize, 0 )
+		self.m_radioBtnColor.SetValue( True ) 
+		bSizer2611.Add( self.m_radioBtnColor, 0, wx.ALL, 5 )
+		
+		
+		bSizer251.Add( bSizer2611, 1, wx.EXPAND, 5 )
+		
+		
+		bSizer92.Add( bSizer251, 0, wx.EXPAND, 5 )
+		
+		self.m_staticline3112 = wx.StaticLine( self.panel0, wx.ID_ANY, wx.DefaultPosition, wx.DefaultSize, wx.LI_VERTICAL )
+		bSizer92.Add( self.m_staticline3112, 0, wx.EXPAND |wx.ALL, 0 )
 		
 		
 		bSizer92.Add( ( 0, 0), 1, wx.EXPAND, 5 )
