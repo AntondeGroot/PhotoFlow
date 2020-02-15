@@ -27,11 +27,33 @@ PIL.Image.MAX_IMAGE_PIXELS = 1000000000  #max image size of 1GB: otherwise it wi
 Otherwise it cannot deal with 32 bit images.
 Now both 8-32 bit images work fine."""
 
-
-def RAW_to_PIL(filename):
+import numpy as np
+def RAW_to_PIL(filename,BWphoto):
     raw = rawpy.imread(filename)
-    rgb = raw.postprocess(use_auto_wb =True,gamma=None,use_camera_wb=False,no_auto_bright=False,bright = 1.3)
+    
+    
+    if BWphoto:
+        rgb = raw.raw_image_visible    
+        rgb = rgb - np.amin(rgb)*1.2
+    else:
+        rgb = raw.postprocess()
+        
+    #rgb = raw.raw_image
+    
+    
+    #arraw = np.array(raw)
+    
+    #arraw = np.array(raw)
+    
+    #print(f"type = {type(arraw)}")
+    #print(f"size = {arraw}")
+    #rgb = raw.postprocess()
+    ##rgb = raw.postprocess(use_auto_wb =True,gamma=None,use_camera_wb=False,no_auto_bright=False,bright = 1.3)
     img = PIL.Image.fromarray(rgb)
+    
+    #img = PIL.Image.open(filename,mode='L')
+    #print(f"size is {img.size}")
+    
     return img
 
 def JPG_to_PIL(filename):
@@ -51,7 +73,7 @@ class pictures():
         # modes
         self.edited = "_EE"
         self.queue = "_QQ" # queue to be printed
-        self.finished = "_PP"
+        #self.finished = "_PP"
         self.finished = "_FF"
         
         
@@ -102,7 +124,7 @@ class pictures():
             """If you want to edit an image it will add the appropriate suffix to the filename
             If it has already been edited before it will not add it again
             If it is already in the printqueue but you want to touch it up, it will not add it."""
-            if self.edited not in path and self.queue not in path:
+            if self.edited not in path and self.queue not in path and self.finished not in path:
                 path_new = self.AddToPath(path,self.edited)
             else:
                 path_new = path
@@ -356,7 +378,8 @@ class MainFrame(wx.Frame,settings):
             PanelWidth, PH = self.m_panelBitmap.GetSize()
             
             if IsRAW(filepath):
-                image = RAW_to_PIL(filepath)
+                BWphoto = self.m_radioBtnBW.GetValue()
+                image = RAW_to_PIL(filepath,BWphoto)
             else:
                 image = JPG_to_PIL(filepath)
             imagesize_bytes = os.path.getsize(filepath)
@@ -522,13 +545,26 @@ class MainFrame(wx.Frame,settings):
                     newpath = self.pictures.addpicmode(path = path,mode='finished') #printqueue to finished
                 else:
                     newpath = path
+                    
                 if self.m_checkBoxRAW.IsChecked():
                     #export both raw and jpg files
-                    shutil.move(newpath,self.export_directory)
+                    try:
+                        shutil.move(newpath,self.export_directory)
+                    except:
+                        """if a copy of a file already exist on the location it will
+                        only move the files until the program encounters this double,
+                        all the files after this one will then be removed but not moved."""  
+                        pass
                 else:
                     #only export nonraw files
                     if IsNotRAW(newpath):
-                        shutil.move(newpath,self.export_directory)
+                        try:
+                            shutil.move(newpath,self.export_directory)
+                        except:
+                            """if a copy of a file already exist on the location it will
+                            only move the files until the program encounters this double,
+                            all the files after this one will then be removed but not moved."""
+                            pass
         self.resetimage()
     
     def btnCopyPrintsOnButtonClick(self,event):
@@ -552,11 +588,18 @@ class MainFrame(wx.Frame,settings):
                 newpath = self.pictures.addpicmode(path = path,mode='finished') #printqueue to finished
                 if self.m_checkBoxRAW.IsChecked():
                     #export both raw and jpg files
-                    shutil.copy2(newpath,self.export_directory)
+                    try:
+                        shutil.copy2(newpath,self.export_directory)
+                    except:
+                        pass
+                    
                 else:
                     #only export nonraw files
                     if IsNotRAW(newpath):
-                        shutil.copy2(newpath,self.export_directory)
+                        try:
+                            shutil.copy2(newpath,self.export_directory)
+                        except:
+                            pass
         self.resetimage()
     
 
@@ -620,6 +663,7 @@ class MainFrame(wx.Frame,settings):
                 self.settings_set()
                 self.settextctrl()
                 self.Update()
+                self.m_buttonOnButtonClick(None)
     def m_buttonDirpickerExeOnButtonClick(self,event):
         if not os.path.exists(self.edit_exe):
             self.edit_exe = r"C:\\"
