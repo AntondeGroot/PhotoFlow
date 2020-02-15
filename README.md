@@ -3,7 +3,7 @@
 - To improve the workflow of selecting photos to edit /delete 
 - Select photos to print
 - Collect them and put them in a specified folder so that you can print them at a store.
-
+# 
 - You only need to select a starting directory
 - The program will walk through all subfolders and put all the images in a grid
 - It displays the images
