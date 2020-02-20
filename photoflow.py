@@ -422,21 +422,28 @@ class MainFrame(wx.Frame,settings):
             targetname,_ = os.path.splitext(os.path.basename(targetpath))
             date_check = get_date_taken(targetpath)
             
-            for path in self.pathlist:
-                basename = path_to_basename(path)
-                if basename == targetname:
-                    
-                    date = get_date_taken(path)
-                    print(date)
-                    print(f"check = {date_check}")
-                    if date == date_check: #exclude pictures from different folders that happen to have the same name
-                        filelist_check.append(basename)
-                        filelist.append(path)
-                        rowindices.append(self.pathlist.index(path))
+            if date_check != '00-00-00':
+                for path in self.pathlist:
+                    basename = path_to_basename(path)
+                    if basename == targetname:
+                        
+                        date = get_date_taken(path)
+                        print(date)
+                        print(f"check = {date_check}")
+                        if date == date_check: #exclude pictures from different folders that happen to have the same name
+                            filelist_check.append(basename)
+                            filelist.append(path)
+                            rowindices.append(self.pathlist.index(path))
+            else:
+                # if for example you have multiple restored images, then they will all have no meta data
+                # if they have the same name the program would otherwise delete different images from different folders that just happened to have the same name
+                filelist.append(targetpath)
+                rowindices.append(self.pathlist.index(targetpath))
                     
             rowindices = sorted(rowindices,reverse=True)
             print(f"rowindices = {rowindices}")
         return rowindices, filelist
+    
     def delete_JPGRAW_files(self,indices,filelist):
         if isinstance(self.selectedrow,int):
             for i,rowindex in enumerate(indices):
@@ -444,6 +451,7 @@ class MainFrame(wx.Frame,settings):
                 filelist.pop(0)
                 send2trash(path)
                 self.updategrid(index = rowindex)
+                
     def looknextimageinstance(self, mode):
         """"""
         if isinstance(self.selectedrow,int):
@@ -696,7 +704,11 @@ class MainFrame(wx.Frame,settings):
     def btnDeleteBothOnButtonClick( self, event ):       
         rowindices,filelist = self.find_JPGRAW_files()
         self.delete_JPGRAW_files(rowindices,filelist)
+        print(f"len is {len(rowindices)}")
         #reset
+        #self.selectedrow -= len(rowindices)-1
+        if self.selectedrow < 0:
+            self.selectedrow = 0
         self.picturepath = None
         self.resetimage()
         self.showimagefromindex(self.selectedrow)
