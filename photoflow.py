@@ -17,6 +17,7 @@ import exifread #via 'Anaconda prompt'
 import PIL
 import ctypes
 from send2trash import send2trash
+import datetime
 
 MessageBox = ctypes.windll.user32.MessageBoxW
 MB_ICONINFORMATION = 0x00000040
@@ -66,37 +67,37 @@ try:
 except:
     pass
 
+
+
 class pictures():
     
     def __init__(self):
-        self.picturemodes = ['Unedited','Edited','Print queue','Printed']
-        # modes
-        self.edited = "_EE"
-        self.queue = "_QQ" # queue to be printed
-        #self.finished = "_PP"
-        self.finished = "_FF"
+        self.mode1 = 'Original' #original / unselected pictures
+        self.mode2 = 'Print queue'
+        self.mode3 = 'Printed'        
+        self.picturemodes = [self.mode1,self.mode2,self.mode3] #unedited?anton
+        # modes suffixes
+        """Pictures that have been placed in the print queueu or have been printed and marked as such by the user
+        will get these suffixes to the filenames."""
+        self.queue = "_QQ"    #queue to be printed
+        self.finished = "_FF" 
         
         
     
-    def checktype(self,filename = '',mode = 'Unedited'):
-        mode = mode.lower()
+    def checktype(self,filename = '',mode = ''):
+        #mode = mode.lower()
             
-        if mode == 'unedited':
-            if self.edited not in filename and self.queue not in filename and self.finished not in filename:
+        if mode == self.mode1: #original unselected images
+            if self.queue not in filename and self.finished not in filename:
                 return True
             else:
-                return False
-        elif mode == 'edited':
-            if self.edited in filename and self.finished not in filename:
-                return True
-            else:
-                return False
-        elif mode == 'print queue':
+                return False    
+        elif mode == self.mode2: #in print queue
             if self.queue in filename and self.finished not in filename:
                 return True
             else:
                 return False
-        elif mode == 'printed':
+        elif mode == self.mode3:
             if self.finished in filename:
                 return True
             else:
@@ -111,26 +112,20 @@ class pictures():
     def AddToPath(self,path_in,string):
         filename, file_extension = os.path.splitext(path_in)
         filename += string
+        if os.path.exists(filename + file_extension):
+            #make sure files with the same name don't overwrite each other.
+            filename += '_1'
         filename += file_extension 
         path_out = filename
+        
         os.rename(path_in,path_out)
         return path_out
     
         
-    def addpicmode(self,path = '',mode='Edit'):
+    def addpicmode(self,path = '',mode=''):
         mode = mode.lower()
         
-        if mode == 'edit':
-            """If you want to edit an image it will add the appropriate suffix to the filename
-            If it has already been edited before it will not add it again
-            If it is already in the printqueue but you want to touch it up, it will not add it."""
-            if self.edited not in path and self.queue not in path and self.finished not in path:
-                path_new = self.AddToPath(path,self.edited)
-            else:
-                path_new = path
-            return path_new
-        
-        elif mode == 'queue':
+        if mode == 'queue':
             if self.queue not in path:
                 path_new = self.AddToPath(path,self.queue)
             else:
@@ -161,8 +156,7 @@ def GetShortPath(dirpath):
     b = os.path.basename(path.parent)
     shortpath = os.path.join(a,b)
     return shortpath
-import datetime
-import PIL
+
 def get_date_taken(path):
     """EXIF date taken: 2017:06:04 hh/mn/ss
     Turns it to 17-06-04"""
@@ -442,6 +436,7 @@ class MainFrame(wx.Frame,settings):
                     
             rowindices = sorted(rowindices,reverse=True)
             print(f"rowindices = {rowindices}")
+            print(f"files = {filelist}")
         return rowindices, filelist
     
     def delete_JPGRAW_files(self,indices,filelist):
@@ -498,8 +493,6 @@ class MainFrame(wx.Frame,settings):
     
     def btnEditOnButtonClick( self, event ):
         if self.picturepath:        
-            #change filename
-            self.picturepath = self.pictures.addpicmode(path = self.picturepath,mode='Edit')
             subprocess.Popen([self.edit_exe, self.picturepath], stdin=None, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             self.resetimage()
     def m_buttonImDirOnButtonClick( self, event ):
@@ -705,6 +698,7 @@ class MainFrame(wx.Frame,settings):
         rowindices,filelist = self.find_JPGRAW_files()
         self.delete_JPGRAW_files(rowindices,filelist)
         print(f"len is {len(rowindices)}")
+        print(f"files = {filelist}")
         #reset
         #self.selectedrow -= len(rowindices)-1
         if self.selectedrow < 0:
